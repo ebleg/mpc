@@ -30,8 +30,6 @@ param.x0.att = [0 0 0]';
 param.x0.linvel = [0 0 0]';
 param.x0.angvel = [0 0 0]';
 
-param.x0.angvel = [0 0 0]';
-
 %% Rotation matrix
 
 

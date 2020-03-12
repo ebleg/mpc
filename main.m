@@ -8,6 +8,8 @@
 clear; 
 close all;
 
+addpath('tools');
+
 %% 
 run parameters
 run verification

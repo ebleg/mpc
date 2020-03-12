@@ -7,7 +7,6 @@ function [lti_rot] = simpRotationalDynamics(par, xref)
     % We don't need a reference for U since the dynamics are already linear
     % with respect to the input
     
-    
     lti_rot = struct();
     
     % Build up the matrices out of several parts for clarity

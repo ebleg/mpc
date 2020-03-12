@@ -5,31 +5,46 @@
 %
 % -------------------------------------------------------------------------
 
-param = struct();
+par = struct();
 
 %% Quadcopter properties
-param.drone.Ixx = 7.5e-3;
-param.drone.Iyy = 7.5e-3;
-param.drone.Izz = 1.3e-2;
-param.drone.I = diag([param.drone.Ixx param.drone.Iyy param.drone.Izz]);
-param.drone.l = 0.23;
-param.drone.m = 0.2; % ????????????????????? look up in doctoral thesis
+par.drone.Ixx = 7.5e-3;
+par.drone.Iyy = 7.5e-3;
+par.drone.Izz = 1.3e-2;
+par.drone.I = diag([par.drone.Ixx par.drone.Iyy par.drone.Izz]);
+par.drone.l = 0.23;
+par.drone.m = 0.2; % ????????????????????? look up in doctoral thesis
 
-param.drone.rotor.J = 6e-5;
-param.drone.rotor.Kf = 3.13e-5;
-param.drone.rotor.Km = 7.5e-7;
+par.drone.rotor.J = 6e-5;
+par.drone.rotor.Kf = 3.13e-5;
+par.drone.rotor.Km = 7.5e-7;
 
-param.drone.Kt = diag([0.1 0.1 0.15]);
+par.drone.Kt = diag([0.1 0.1 0.15]);
 
 %% General parameters
-param.env.g = 9.80665;
+par.env.g = 9.80665;
 
 %% Initial conditions
-param.x0.pos = [0 0 2]';
-param.x0.att = [0 0 0]';
-param.x0.linvel = [0 0 0]';
-param.x0.angvel = [0 0 0]';
+par.x0.pos = [0 0 2]';
+par.x0.att = [0 0 0]';
+par.x0.linvel = [0 0 0]';
+par.x0.angvel = [0 0 0]';
 
-%% Rotation matrix
+%% Shorthand parameters
+% Stored for computational efficiency in simpRotationalDynamics and 
+% simpTranslationalDynamics
+
+par.drone.a1 = (par.drone.Iyy - par.drone.Izz)./par.drone.Ixx;
+par.drone.a2 = par.drone.rotor.J/par.drone.Ixx;
+par.drone.a3 = (par.drone.Izz- par.drone.Ixx)/par.drone.Iyy;
+par.drone.a4 = par.drone.rotor.J/par.drone.Iyy;
+par.drone.a5 = (par.drone.Ixx - par.drone.Iyy)/par.drone.Izz;
+par.drone.b1 = par.drone.l/par.drone.Ixx;
+par.drone.b2 = par.drone.l/par.drone.Iyy;
+par.drone.b3 = par.drone.l/par.drone.Izz;
+
+par.drone.nomThrust = par.drone.m*par.env.g/4;
+
+
 
 

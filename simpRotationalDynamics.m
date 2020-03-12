@@ -1,4 +1,4 @@
-function [lti_rot] = simpRotationalDynamics(par, xref)
+function [LTI_rot] = simpRotationalDynamics(par, xref)
 % Generate state-space matrices for the simplified rotational dynamics of
 % the quadrotor
 
@@ -7,7 +7,7 @@ function [lti_rot] = simpRotationalDynamics(par, xref)
     % We don't need a reference for U since the dynamics are already linear
     % with respect to the input
     
-    lti_rot = struct();
+    LTI_rot = struct();
     
     % Build up the matrices out of several parts for clarity
     A1 = [0                     -par.drone.a1*xref(3)  par.drone.a1*xref(2);
@@ -17,13 +17,13 @@ function [lti_rot] = simpRotationalDynamics(par, xref)
     A3 = eye(3);
     A4 = A2;
     
-    lti_rot.A = [A1 A2;
+    LTI_rot.A = [A1 A2;
                  A3 A4]; 
     
-    lti_rot.B = [diag([par.drone.b1 par.drone.b2 par.drone.b3]);
+    LTI_rot.B = [diag([par.drone.b1 par.drone.b2 par.drone.b3]);
                  zeros(3,3)];
              
-    lti_rot.C = eye(6); % Assume full state knowledge for now
-    lti_rot.D = zeros(6, 3);
+    LTI_rot.C = eye(6); % Assume full state knowledge for now
+    LTI_rot.D = zeros(6, 3);
 end
 

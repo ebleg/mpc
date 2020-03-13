@@ -17,13 +17,15 @@ function [LTI_rot] = simpRotationalDynamics(par, xref)
     A3 = eye(3);
     A4 = A2;
     
-    LTI_rot.A = [A1 A2;
+    A = [A1 A2;
                  A3 A4]; 
     
-    LTI_rot.B = [diag([par.drone.b1 par.drone.b2 par.drone.b3]);
+    B = [diag([par.drone.b1 par.drone.b2 par.drone.b3]);
                  zeros(3,3)];
              
-    LTI_rot.C = eye(6); % Assume full state knowledge for now
-    LTI_rot.D = zeros(6, 3);
+    C = eye(6); % Assume full state knowledge for now
+    D = zeros(6, 3);
+    
+    LTI_rot = ss(A, B, C, D);
 end
 

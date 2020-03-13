@@ -7,9 +7,10 @@ function [LTI_trans] = simpTranslationalDynamics(ang, u_ref)
     R = eul2rotm(ang, 'XYZ');
     fcn = @(u) R*[0 0 u_ref]' + [0 0 -mg];
     
-    LTI_trans.A = [zeros(3, 6); zeros(3) eye(3)];
-    LTI_trans.B = jacobianest(fcn, u_ref);
-    LTI_trans.C = eye(6); % Assume full state feedback
-    LTI_trans.D = zeros(6, 1);
+    A = [zeros(3, 6); zeros(3) eye(3)];
+    B = jacobianest(fcn, u_ref);
+    C = eye(6); % Assume full state feedback
+    D = zeros(6, 1);
+    
+    LTI_trans = ss(A, B, C, D);
 end
-

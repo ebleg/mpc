@@ -12,6 +12,3 @@ addpath('tools');
 
 %% Simplest case: complete state knowledge, linearization around hover
 run parameters
-
-
-

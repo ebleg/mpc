@@ -1,0 +1,7 @@
+Paper model quadcopter
+http://andrew.gibiansky.com/downloads/pdf/Quadcopter%20Dynamics,%20Simulation,%20and%20Control.pdf
+
+
+Matlab/Simulink referenties
+https://nl.mathworks.com/help/mpc/gs/designing-a-model-predictive-controller-for-a-simulink-plant.html
+https://nl.mathworks.com/help/aeroblks/quadcopter-project.html

@@ -14,7 +14,7 @@ par.drone.I = diag([par.drone.Ixx par.drone.Iyy par.drone.Izz]);
 par.drone.l = 0.23;
 par.drone.m = 0.2; % ????????????????????? look up in doctoral thesis
 
-par.drone.rotor.J = 6e-5;
+par.drone.rotor.I = 6e-5;
 par.drone.rotor.Kf = 3.13e-5;
 par.drone.rotor.Km = 7.5e-7;
 
@@ -34,15 +34,21 @@ par.x0.angvel = [0 0 0]';
 % simpTranslationalDynamics
 
 par.drone.a1 = (par.drone.Iyy - par.drone.Izz)./par.drone.Ixx;
-par.drone.a2 = par.drone.rotor.J/par.drone.Ixx;
+par.drone.a2 = par.drone.rotor.I/par.drone.Ixx;
 par.drone.a3 = (par.drone.Izz- par.drone.Ixx)/par.drone.Iyy;
-par.drone.a4 = par.drone.rotor.J/par.drone.Iyy;
+par.drone.a4 = par.drone.rotor.I/par.drone.Iyy;
 par.drone.a5 = (par.drone.Ixx - par.drone.Iyy)/par.drone.Izz;
 par.drone.b1 = par.drone.l/par.drone.Ixx;
 par.drone.b2 = par.drone.l/par.drone.Iyy;
 par.drone.b3 = par.drone.l/par.drone.Izz;
 
 par.drone.nomThrust = par.drone.m*par.env.g/4;
+
+%% Input control parameters
+par.cstr.maxVel = 285; % [rad/s], Include 85% SF margin to reduce wear on the gearbox
+
+% 0.08 = Pel,max*eff/omega_max, 0.039 = k_T*omega_max^2
+par.cstr.maxAcc = (0.08 - 0.039)/par.drone.rotor.I*0.85; % Seems reasonable
 
 %% Position control parameters
 % Problem dimensions
@@ -57,5 +63,3 @@ par.posCtrl.P = eye(par.posCtrl.dim.x); % Might be overwritten by DARE solution
 
 % Sample rate
 par.posCtrl.fs = 10; % Hz
-
-

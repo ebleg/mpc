@@ -19,8 +19,8 @@ function [u] = positionControl(ang, error, par)
     
     %% Solve optimization problem
     uvec = sdpvar(N, par.dim.u);
-    % [ YALMIP MAGIC HERE ]
     
+    constraints = 
     
 
 end

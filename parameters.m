@@ -23,6 +23,7 @@ par.drone.Kt = diag([0.1 0.1 0.15]);
 
 %% General parameters
 par.env.g = 9.80665;
+par.env.Ts = 0.1;
 
 %% Initial conditions
 par.x0.pos = [0 0 2]';
@@ -44,6 +45,11 @@ par.drone.b2 = par.drone.l/par.drone.Iyy;
 par.drone.b3 = par.drone.l/par.drone.Izz;
 
 par.drone.nomThrust = par.drone.m*par.env.g/4;
+
+%% Input/Output contraints
+par.dim.x = 12;
+par.dim.u = 4;
+par.dim.y = 4;
 
 
 

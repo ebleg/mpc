@@ -1,7 +1,6 @@
 %% PARAMETERS
 %
-% Emiel Legrand
-% 01/03/2020
+% Elke Salzmann, Emiel Legrand
 %
 % -------------------------------------------------------------------------
 
@@ -45,6 +44,18 @@ par.drone.b3 = par.drone.l/par.drone.Izz;
 
 par.drone.nomThrust = par.drone.m*par.env.g/4;
 
+%% Position control parameters
+% Problem dimensions
+par.posCtrl.dim.u = 1; % Input vector length
+par.posCtrl.dim.x = 1; % State vector length
+par.posCtrl.dim.y = 1; % 
 
+% Cost matrices
+par.posCtrl.Q = eye(par.posCtrl.dim.x);
+par.posCtrl.R = eye(par.posCtrl.dim.u);
+par.posCtrl.P = eye(par.posCtrl.dim.x); % Might be overwritten by DARE solution
+
+% Sample rate
+par.posCtrl.fs = 10; % Hz
 
 

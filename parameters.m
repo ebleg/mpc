@@ -52,9 +52,9 @@ par.cstr.maxAcc = (0.08 - 0.039)/par.drone.rotor.I*0.85; % Seems reasonable
 
 %% Position control parameters
 % Problem dimensions
-par.posCtrl.dim.u = 1; % Input vector length
-par.posCtrl.dim.x = 1; % State vector length
-par.posCtrl.dim.y = 1; % 
+par.posCtrl.dim.u = 3; % Input vector length
+par.posCtrl.dim.x = 6; % State vector length
+par.posCtrl.dim.y = 6; % Assume full-state knowledge for now
 
 % Cost matrices
 par.posCtrl.Q = eye(par.posCtrl.dim.x);
@@ -63,3 +63,8 @@ par.posCtrl.P = eye(par.posCtrl.dim.x); % Might be overwritten by DARE solution
 
 % Sample rate
 par.posCtrl.fs = 10; % Hz
+
+%% Optimization settings
+par.opt.settings = sdpsettings('verbose', 0, ...
+                               'solver', 'quadprog', ...
+                               'quadprog.maxiter',100);

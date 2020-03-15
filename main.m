@@ -26,3 +26,6 @@ plot3(pathpts(1,:), pathpts(2,:), pathpts(3,:))
 grid; grid minor;
 
 %% Define initial conditions
+
+
+%% 

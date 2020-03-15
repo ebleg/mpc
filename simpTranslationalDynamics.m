@@ -31,8 +31,8 @@ function [LTI_trans] = simpTranslationalDynamics(setpt, par)
     
     B = [bT, bphi, btheta;
          zeros(par.posCtrl.dim.u)];
-    C = eye(par.posCtlr.dim.y); % Assume full state feedback (for now)
-    D = zeros(par.posCtlr.dim.y, par.posCtrl.dim.u);
+    C = eye(par.posCtrl.dim.y); % Assume full state feedback (for now)
+    D = zeros(par.posCtrl.dim.y, par.posCtrl.dim.u);
     
     LTI_trans = ss(A, B, C, D);
 end

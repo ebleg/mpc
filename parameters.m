@@ -4,6 +4,13 @@
 %
 % -------------------------------------------------------------------------
 
+% This file contains all parameters for the MPC problem:
+% - Drone physical properties
+% - Weight matrices for all cost functions
+% - Settings
+% Some other values are precomputed because they are used at every timestep
+% of the MPC controllers or integration of the system dynamics. 
+
 par = struct();
 
 %% Quadcopter properties
@@ -12,13 +19,18 @@ par.drone.Iyy = 7.5e-3;
 par.drone.Izz = 1.3e-2;
 par.drone.I = diag([par.drone.Ixx par.drone.Iyy par.drone.Izz]);
 par.drone.l = 0.23;
-par.drone.m = 0.2; % ????????????????????? look up in doctoral thesis
-
+par.drone.m = 0.650;
 par.drone.rotor.I = 6e-5;
 par.drone.rotor.Kf = 3.13e-5;
 par.drone.rotor.Km = 7.5e-7;
 
 par.drone.Kt = diag([0.1 0.1 0.15]);
+
+% Matrix mapping between input and rotor speed SQUARED
+par.drone.omega2u = [par.drone.rotor.Kf*[1 1 1 1; 0 -1 0 1; 1 0 -1 0];
+                           par.drone.rotor.Km*[1 -1 1 -1]];
+                       
+par.drone.u2omega = par.drone.rotor.omega2u^-1; % precompute for efficiency 
 
 %% General parameters
 par.env.g = 9.80665;
@@ -32,6 +44,7 @@ par.x0.angvel = [0 0 0]';
 %% Shorthand parameters
 % Stored for computational efficiency in simpRotationalDynamics and 
 % simpTranslationalDynamics
+% [from ElKholy]
 
 par.drone.a1 = (par.drone.Iyy - par.drone.Izz)./par.drone.Ixx;
 par.drone.a2 = par.drone.rotor.I/par.drone.Ixx;
@@ -65,7 +78,7 @@ par.posCtrl.P = eye(par.posCtrl.dim.x); % Might be overwritten by DARE solution
 % Sample rate
 par.posCtrl.Ts = 0.1; % Hz
 
-%% Position target selection parameters
+%% Position target selection weight matrices
 par.posTarSel.Q = eye(par.posCtrl.dim.x);
 par.posTarSel.R = eye(par.posCtrl.dim.u);
 

@@ -1,4 +1,4 @@
-function [u, flag] = positionControl(ang, x0, uref, xref, par)
+function [u, flag] = positionControl(LTI_pos, pos, uref, xref, par)
     %% POSITION CONTROLLER
     % u:   [Ttotal, phi_ref, theta_ref]'
     % ang: current attitude of the quadcopter (which makes this MPC
@@ -8,10 +8,10 @@ function [u, flag] = positionControl(ang, x0, uref, xref, par)
     %      variables etc.
 
     %% Adaptive MPC - determine linear system matrices
-    setpt = [par.drone.m*par.env.g; ang];
-    LTI_pos = c2d(simpTranslationalDynamics(setpt, par), ...
-        par.posCtrl.Ts, ...
-        'zoh');
+%     setpt = [par.drone.m*par.env.g; ang];
+%     LTI_pos = c2d(simpTranslationalDynamics(setpt, par), ...
+%         par.posCtrl.Ts, ...
+%         'zoh');
 
     %% Define optimization problem
     % Prediction matrices
@@ -22,7 +22,7 @@ function [u, flag] = positionControl(ang, x0, uref, xref, par)
     Rbar = kron(eye(par.posCtrl.dim.N), par.posCtrl.R);
 
     H = S'*Qbar*S + Rbar;
-    h = Rbar*uref + S'*Qbar*T*x0 + S'*Qbar*xref;
+    h = Rbar*uref + S'*Qbar*T*pos + S'*Qbar*xref;
 
     uvec = sdpvar(par.posCtrl.dim.N*par.posCtrl.dim.u, 1);
     obj = 0.5*uvec'*H*uvec + h'*uvec;

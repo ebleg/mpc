@@ -65,7 +65,11 @@ par.posCtrl.P = eye(par.posCtrl.dim.x); % Might be overwritten by DARE solution
 % Sample rate
 par.posCtrl.Ts = 0.1; % Hz
 
-%% Optimization settiSngs
+%% Position target selection parameters
+par.posTarSel.Q = eye(par.posCtrl.dim.x);
+par.posTarSel.R = eye(par.posCtrl.dim.u);
+
+%% Optimization settings
 par.opt.settings = sdpsettings('verbose', 0, ...
                                'solver', 'quadprog', ...
                                'quadprog.maxiter',100);

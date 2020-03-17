@@ -30,7 +30,7 @@ par.drone.Kt = diag([0.1 0.1 0.15]);
 par.drone.omega2u = [par.drone.rotor.Kf*[1 1 1 1; 0 -1 0 1; 1 0 -1 0];
                            par.drone.rotor.Km*[1 -1 1 -1]];
                        
-par.drone.u2omega = par.drone.rotor.omega2u^-1; % precompute for efficiency 
+par.drone.u2omega = par.drone.omega2u^-1; % precompute for efficiency 
 
 %% General parameters
 par.env.g = 9.80665;
@@ -81,6 +81,10 @@ par.posCtrl.Ts = 0.1; % Hz
 %% Position target selection weight matrices
 par.posTarSel.Q = eye(par.posCtrl.dim.x);
 par.posTarSel.R = eye(par.posCtrl.dim.u);
+
+%% Simulation parameers
+par.sim.tmax = 10;
+par.sim.h = 1e-2;
 
 %% Optimization settings
 par.opt.settings = sdpsettings('verbose', 0, ...

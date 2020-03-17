@@ -13,6 +13,10 @@ function [u, flag] = positionControl(LTI_pos, pos, uref, xref, par)
 %         par.posCtrl.Ts, ...
 %         'zoh');
 
+    % Vertically stack reference vectors
+    uref = reshape(uref, [par.posCtrl.dim.N*par.posCtrl.dim.u, 1]);
+    xref = reshape(xref, [par.posCtrl.dim.N*par.posCtrl.dim.x, 1]);
+
     %% Define optimization problem
     % Prediction matrices
     [T, S] = predmodgen(LTI_pos, par.posCtrl.dim);

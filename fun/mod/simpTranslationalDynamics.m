@@ -11,26 +11,30 @@ function [LTI_trans] = simpTranslationalDynamics(setpt, par)
     
     LTI_trans = struct();
    
-    A = [zeros(3, 6); zeros(3) eye(3)]; 
+    A = [zeros(3, 6); eye(3) zeros(3)]; 
     
     % Columns of input matrix
-    bT = -1/par.drone.m*...
-        [sin(phi0)*sin(psi0) + cos(phi0)*cos(psi0)*sin(theta0);
-         cos(phi0)*sin(psi0)*sin(theta0) - cos(psi0)*sin(phi0);
-         cos(phi0)*cos(theta0)];
-     
-    bphi = -T0/par.drone.m*...
-           [cos(phi0)*sin(psi0) - sin(phi0)*cos(psi0)*sin(theta0);
-            -sin(phi0)*sin(psi0)*sin(theta0) - cos(psi0)*cos(phi0);
-            -sin(phi0)*cos(theta0)];
+%     bT = -1/par.drone.m*...
+%         [sin(phi0)*sin(psi0) + cos(phi0)*cos(psi0)*sin(theta0);
+%          cos(phi0)*sin(psi0)*sin(theta0) - cos(psi0)*sin(phi0);
+%          cos(phi0)*cos(theta0)];
+%      
+%     bphi = -T0/par.drone.m*...
+%            [cos(phi0)*sin(psi0) - sin(phi0)*cos(psi0)*sin(theta0);
+%             -sin(phi0)*sin(psi0)*sin(theta0) - cos(psi0)*cos(phi0);
+%             -sin(phi0)*cos(theta0)];
+%     
+%     btheta = -T0/par.drone.m*...
+%              [cos(phi0)*cos(psi0)*cos(theta0);
+%              cos(phi0)*sin(psi0)*cos(theta0);
+%              -cos(phi0)*sin(theta0)];
+
+    fcn = @(e) translationalDynamics([0 0 0 0 0 0]', e, par);
+    B = jacobianest(fcn, setpt);
+    B = B(:,1:par.posCtrl.dim.u);
     
-    btheta = -T0/par.drone.m*...
-             [cos(phi0)*cos(psi0)*cos(theta0);
-             cos(phi0)*sin(psi0)*cos(theta0);
-             -cos(phi0)*sin(theta0)];
-    
-    B = [bT, bphi, btheta;
-         zeros(par.posCtrl.dim.u)];
+%     B = [bT, bphi, btheta;
+%          zeros(par.posCtrl.dim.u)];
     C = eye(par.posCtrl.dim.y); % Assume full state feedback (for now)
     D = zeros(par.posCtrl.dim.y, par.posCtrl.dim.u);
     

@@ -10,26 +10,24 @@ function [u, flag] = positionControl(LTI_pos, pos, uref, xref, par)
     %% Adaptive MPC - determine linear system matrices
 %     setpt = [par.drone.m*par.env.g; ang];
 %     LTI_pos = c2d(simpTranslationalDynamics(setpt, par), ...
-%         par.posCtrl.Ts, ...
 %         'zoh');
-
-    % Vertically stack reference vectors
-    uref = reshape(uref, [par.posCtrl.dim.N*par.posCtrl.dim.u, 1]);
-    xref = reshape(xref, [par.posCtrl.dim.N*par.posCtrl.dim.x, 1]);
 
     %% Define optimization problem
     % Prediction matrices
     [T, S] = predmodgen(LTI_pos, par.posCtrl.dim);
-
-    % Cost function
+    % Extended weights
     Qbar = blkdiag(kron(eye(par.posCtrl.dim.N), par.posCtrl.Q), par.posCtrl.P);
     Rbar = kron(eye(par.posCtrl.dim.N), par.posCtrl.R);
-
+    % Stack references vertically
+    xref = reshape(xref, [(par.posCtrl.dim.N+1)*par.posCtrl.dim.x, 1]);
+    uref = reshape(uref, [par.posCtrl.dim.N*par.posCtrl.dim.u, 1]);
+    
+    % Define quadratic programming problem
     H = S'*Qbar*S + Rbar;
-    h = Rbar*uref + S'*Qbar*T*pos + S'*Qbar*xref;
-
+    h = S'*Qbar*T*pos - S'*Qbar*xref - Rbar'*uref;
+    
     uvec = sdpvar(par.posCtrl.dim.N*par.posCtrl.dim.u, 1);
-    obj = 0.5*uvec'*H*uvec + h'*uvec;
+    obj = uvec'*H*uvec + h'*uvec;
 
     %% Constraint definition
     constr = [];
@@ -44,18 +42,19 @@ function [u, flag] = positionControl(LTI_pos, pos, uref, xref, par)
               uvec(2,1) - uvec(1,1) <= acstr];
 
     for i=2:par.posCtrl.dim.N
-        % Maximum rotor speed constraint
+%         Maximum rotor speed constraint
         constr = [constr, uvec(i,1) <= vcstr, ...
                   uvec(i,1) >= 0, ...;
                   uvec(i,1) - uvec(i-1,1) <= acstr];
     end
+    
 
     %% Solve optimization problem
     sol = optimize(constr, obj, par.opt.settings);
 
     if sol.problem == 0
         uvec = value(uvec);
-        u = uvec(1);
+        u = uvec(1:par.posCtrl.dim.u) + uref(1:par.posCtrl.dim.u);
         flag = 0;
     else
         warning('Position MPC optimization did not converge')

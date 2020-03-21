@@ -15,14 +15,12 @@ addpath('fun/mod');
 addpath('fun/ctrl');
 
 run parameters
-par.sim.h = 1e-2;
-par.sim.tmax = 4;
 
 %% Define path to follow
 % Parameterized for x,y,z with respect to t
 % path = @(t) [4*cos(t); 4*sin(t); t/3]; % Ellipsoidal spiral
-path = @(t) [t; 0*t; sign(t - 2) + 1];
-
+path = @(t) [t; 0*t; sign(t-2)+1]; % Nondifferentiable 2D trajectory
+% path = @(t) [0*t; 0*t; 0*t+1]; % Fly straight up
 
 %% Define initial conditions
 
@@ -37,9 +35,8 @@ pathpts = path(t);
 [ref_pos, ref_ang, ref_u] = generateRefStates(pathpts, par);
 ref_u_pos = [ref_u(1,:); ref_ang(4:5,:)];
 
-x_pos(:,1) = ref_pos(:,1);
+x_pos(:,1) = ref_pos(:,1) + [0 0 0 0.2 0 0.2]';
 x_ang(:,1) = ref_ang(:,1);
-
 
 %% Model verification
 % Open loop simulation with reference inputs of the linear model and the
@@ -65,21 +62,19 @@ x_ang(:,1) = ref_ang(:,1);
 
 u_pos = nan(par.posCtrl.dim.u, nsteps);
 
+tic
 %% Simulation loop
 for i=2:(nsteps-par.posCtrl.dim.N)
-    u_pos(:,i) = positionMPC(x_ang(:,i-1), ...
-                        x_pos(:,i-1), ...
-                        ref_u_pos(:,i:(i+par.posCtrl.dim.N-1)), ...
-                        ref_pos(:,i:(i+par.posCtrl.dim.N)), ...
-                        par);
+    u_pos(:,i) = positionMPC(x_ang(:,i-1), x_pos(:,i-1), t(i), ref_u_pos, ref_pos, par);
     x_ang(:,i) = [zeros(3,1); u_pos(2:3,i); ref_ang(6,i)];
     f = @(x) translationalDynamics(x, [u_pos(:,i); ref_ang(6,i)] , par);
     x_pos(:,i) = RK4(f, x_pos(:,i-1), par.sim.h);
 end
+toc
 
 %%
 close all;
-plot3(pathpts(1,:), pathpts(2,:), pathpts(3,:));
+plot(pathpts(1,:), pathpts(3,:));
 xlabel('x')
 ylabel('y')
 hold on;
@@ -92,11 +87,11 @@ for i = 1:numel(t)
     quivers(:,i) = R*[0; 0; 1]*norm(ddr(:,i));
 end
 
-quiver3(pathpts(1,:), pathpts(2,:), pathpts(3,:), quivers(1,:), quivers(2,:), quivers(3,:))
+% quiver3(pathpts(1,:), pathpts(2,:), pathpts(3,:), quivers(1,:), quivers(2,:), quivers(3,:))
 
 hold on;
 
-plot3(x_pos(4,:), x_pos(5,:), x_pos(6,:));
+plot(x_pos(4,:), x_pos(6,:));
 
 % function dx = linearTranslationModel(x, u, setpt, par)
 %     LTI = simpTranslationalDynamics(setpt, par);

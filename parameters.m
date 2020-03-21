@@ -35,12 +35,6 @@ par.drone.u2omega = par.drone.omega2u^-1; % precompute for efficiency
 %% General parameters
 par.env.g = 9.80665;
 
-%% Initial conditions
-par.x0.pos = [0 0 2]';
-par.x0.att = [0 0 0]';
-par.x0.linvel = [0 0 0]';
-par.x0.angvel = [0 0 0]';
-
 %% Shorthand parameters
 % Stored for computational efficiency in simpRotationalDynamics and 
 % simpTranslationalDynamics
@@ -68,25 +62,22 @@ par.cstr.maxAcc = (0.08 - 0.039)/par.drone.rotor.I*0.85; % Seems reasonable
 par.posCtrl.dim.u = 3; % Input vector length
 par.posCtrl.dim.x = 6; % State vector length
 par.posCtrl.dim.y = 6; % Assume full-state knowledge for now
-par.posCtrl.dim.N = 20; % Prediction horizon
+par.posCtrl.dim.N = 4; % Prediction horizon
 
 % Cost matrices
-par.posCtrl.Q = eye(par.posCtrl.dim.x)*10;
+par.posCtrl.Q = eye(par.posCtrl.dim.x)*diag([1 1 1 20 20 20]);
 par.posCtrl.R = 0*eye(par.posCtrl.dim.u);
-par.posCtrl.P = eye(par.posCtrl.dim.x); % Might be overwritten by DARE solution
+par.posCtrl.P = eye(par.posCtrl.dim.x)*diag([1 1 1 20 20 20]); % Might be overwritten by DARE solution
 
 % Sample rate
-par.posCtrl.Ts = 0.1; % Hz
+par.posCtrl.sampleInt = 0.3;   % Position MPC sample rate
+par.posCtrl.predInt = 0.1;      % Position MPC prediction interval
+
 
 %% Position target selection weight matrices
 par.posTarSel.Q = eye(par.posCtrl.dim.x);
 par.posTarSel.R = eye(par.posCtrl.dim.u);
 
-%% Simulation parameers
-par.sim.tmax = 10;
-par.sim.h = 1e-2;
-
-%% Optimization settings
-par.opt.settings = sdpsettings('verbose', 0, ...
-                               'solver', 'quadprog', ...
-                               'quadprog.maxiter',100);
+%% Simulation parameters
+par.sim.tmax = 5;
+par.sim.h = 1e-2; % ODE integration timestep

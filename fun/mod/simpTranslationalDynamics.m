@@ -31,7 +31,7 @@ function [LTI_trans] = simpTranslationalDynamics(setpt, par)
 
     fcn = @(e) translationalDynamics([0 0 0 0 0 0]', e, par);
     B = jacobianest(fcn, setpt);
-    B = B(:,1:par.posCtrl.dim.u);
+    B = [B(1:3,1:par.posCtrl.dim.u); zeros(3)];
     
 %     B = [bT, bphi, btheta;
 %          zeros(par.posCtrl.dim.u)];

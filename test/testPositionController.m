@@ -5,8 +5,8 @@
 %
 % -------------------------------------------------------------------------
 
-clear; clc;
-close all;
+clear; clear positionMPC;
+clc; close all;
 
 addpath('..')
 addpath('tools');
@@ -15,88 +15,46 @@ addpath('fun/mod');
 addpath('fun/ctrl');
 
 run parameters
+run header
 
 %% Define path to follow
 % Parameterized for x,y,z with respect to t
-% path = @(t) [4*cos(t); 4*sin(t); t/3]; % Ellipsoidal spiral
-path = @(t) [t; 0*t; sign(t-2)+1]; % Nondifferentiable 2D trajectory
+
+fprintf('Objective trajectory: Ellipsoidal spiral\n') 
+path = @(t) [4*cos(t); 4*sin(t); t/3];
+
+% fprintf('\nObjective trajectory: Nondifferentiable 2D trajectory\n\n') 
+% path = @(t) [t; 0*t; sign(t-2)+1]; 
+
+% fprintf('Objective trajectory: Fly to a point,  2D\n') 
 % path = @(t) [0*t; 0*t; 0*t+1]; % Fly straight up
 
-%% Define initial conditions
-
 %% Simulation initialization
-t = (0:par.sim.h:par.sim.tmax);
-nsteps = numel(t);
-x_pos = nan(par.posCtrl.dim.x, nsteps);
-x_ang = nan(6, nsteps); % no par entry yet
+sol = struct();
+sol.t = (0:par.sim.h:par.sim.tmax);
+nsteps = numel(sol.t);
+
+sol.x.pos = nan(par.posCtrl.dim.x, nsteps);
+sol.x.ang = nan(par.angCtrl.dim.x, nsteps);
+sol.u.pos = nan(par.posCtrl.dim.u, nsteps);
+sol.u.ang = nan(par.angCtrl.dim.u, nsteps);
 
 %% Path & reference states
-pathpts = path(t);
-[ref_pos, ref_ang, ref_u] = generateRefStates(pathpts, par);
-ref_u_pos = [ref_u(1,:); ref_ang(4:5,:)];
+ref = generateReference(sol.t, path, par);
 
-x_pos(:,1) = ref_pos(:,1) + [0 0 0 0.2 0 0.2]';
-x_ang(:,1) = ref_ang(:,1);
+%% Set initial conditions
+sol.x.pos(:,1) = ref.x.pos(:,1) + [0 0 0 0.2 0 0.2]';
+sol.x.ang(:,1) = ref.x.ang(:,1);
 
-%% Model verification
-% Open loop simulation with reference inputs of the linear model and the
-% nonlinear model
-% linearValidation = nan(par.posCtrl.dim.x, nsteps);
-% nonlinearValidation = nan(par.posCtrl.dim.x, nsteps);
-% linearValidation(:,1) = ref_pos(:,1);
-% nonlinearValidation(:,1) = ref_pos(:,1);
-% 
-% for i=2:(nsteps-par.posCtrl.dim.N)
-%     fnl = @(x) translationalDynamics(x, [ref_u_pos(:,i); ref_ang(6,i)] , par);
-%     flin = @(x) linearTranslationModel(x, ref_u_pos(:,i), ...
-%                                        [par.drone.m*par.env.g; 0;0;ref_ang(6,i)], par);
-%     nonlinearValidation(:,i) = RK4(fnl, nonlinearValidation(:,i-1), par.sim.h);
-%     linearValidation(:,i) = RK4(flin, linearValidation(:,i-1), par.sim.h);
-% end
-% %%
-% close all;
-% plot3(pathpts(1,:), pathpts(2,:), pathpts(3,:), 'DisplayName', 'Reference path');
-% hold on;
-% plot3(nonlinearValidation(4,:), nonlinearValidation(5,:), nonlinearValidation(6,:), 'DisplayName', 'Nonlinear solution');
-% plot3(linearValidation(4,:), linearValidation(5,:), linearValidation(6,:), 'DisplayName', 'Linear solution');
-
-u_pos = nan(par.posCtrl.dim.u, nsteps);
-
-tic
 %% Simulation loop
+fprintf('Starting simulation loop...\n'); tic;
 for i=2:(nsteps-par.posCtrl.dim.N)
-    u_pos(:,i) = positionMPC(x_ang(:,i-1), x_pos(:,i-1), t(i), ref_u_pos, ref_pos, par);
-    x_ang(:,i) = [zeros(3,1); u_pos(2:3,i); ref_ang(6,i)];
-    f = @(x) translationalDynamics(x, [u_pos(:,i); ref_ang(6,i)] , par);
-    x_pos(:,i) = RK4(f, x_pos(:,i-1), par.sim.h);
+    sol.u.pos(:,i) = positionMPC(sol.x.ang(:,i-1), ...
+                                 sol.x.pos(:,i-1), ...
+                                 sol.t(i), ...
+                                 ref, par);
+    sol.x.ang(:,i) = [zeros(3,1); sol.u.pos(2:3,i); ref.x.ang(6,i)];
+    f = @(x) translationalDynamics(x, [sol.u.pos(:,i); ref.x.ang(6,i)] , par);
+    sol.x.pos(:,i) = RK4(f, sol.x.pos(:,i-1), par.sim.h);
 end
-toc
-
-%%
-close all;
-plot(pathpts(1,:), pathpts(3,:));
-xlabel('x')
-ylabel('y')
-hold on;
-quivers = zeros(size(pathpts));
-ddr = diff(pathpts, 2, 2)/par.sim.h/par.sim.h;
-ddr = [ddr ddr(:,end) ddr(:,end)]; % Acceleration along path
-
-for i = 1:numel(t)
-    R = eul2rotm(ref_ang(4:6,i)', 'XYZ');
-    quivers(:,i) = R*[0; 0; 1]*norm(ddr(:,i));
-end
-
-% quiver3(pathpts(1,:), pathpts(2,:), pathpts(3,:), quivers(1,:), quivers(2,:), quivers(3,:))
-
-hold on;
-
-plot(x_pos(4,:), x_pos(6,:));
-
-% function dx = linearTranslationModel(x, u, setpt, par)
-%     LTI = simpTranslationalDynamics(setpt, par);
-%     fcn = @(e) translationalDynamics([0 0 5 0 0 0]', e, par);
-%     B = jacobianest(fcn, setpt);
-%     B = B(:,1:3);
-%     dx = LTI.A*x + LTI.B*(u - setpt(1:3));
-% end
+fprintf('Simulation ended - '); toc;

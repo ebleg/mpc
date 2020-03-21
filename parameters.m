@@ -65,19 +65,33 @@ par.posCtrl.dim.y = 6; % Assume full-state knowledge for now
 par.posCtrl.dim.N = 4; % Prediction horizon
 
 % Cost matrices
-par.posCtrl.Q = eye(par.posCtrl.dim.x)*diag([1 1 1 20 20 20]);
-par.posCtrl.R = 0*eye(par.posCtrl.dim.u);
-par.posCtrl.P = eye(par.posCtrl.dim.x)*diag([1 1 1 20 20 20]); % Might be overwritten by DARE solution
+par.posCtrl.Q = eye(par.posCtrl.dim.x)*diag([1 1 1 10 10 10]);
+par.posCtrl.R = eye(par.posCtrl.dim.u)*diag([0 1 1]);
+par.posCtrl.P = eye(par.posCtrl.dim.x)*diag([1 1 1 10 10 10]); % Might be overwritten by DARE solution
 
 % Sample rate
-par.posCtrl.sampleInt = 0.3;   % Position MPC sample rate
-par.posCtrl.predInt = 0.1;      % Position MPC prediction interval
+par.posCtrl.sampleInt = 0.05;   % Position MPC sample rate
+par.posCtrl.predInt = 0.05;      % Position MPC prediction interval
 
+%% Attitude control parameters
+% Problem dimensions
+par.angCtrl.dim.u = 3; % Input vector length
+par.angCtrl.dim.x = 6; % State vector length
+par.angCtrl.dim.y = 6; % Assume full-state knowledge for now
+par.angCtrl.dim.N = 4; % Prediction horizon
 
-%% Position target selection weight matrices
-par.posTarSel.Q = eye(par.posCtrl.dim.x);
-par.posTarSel.R = eye(par.posCtrl.dim.u);
+% Cost matrices
+par.angCtrl.Q = eye(par.angCtrl.dim.x);%*diag([1 1 1 20 20 20]);
+par.angCtrl.R = eye(par.angCtrl.dim.u);
+par.angCtrl.P = eye(par.angCtrl.dim.x);%*diag([1 1 1 20 20 20]); % Might be overwritten by DARE solution
+
+% Sample rate
+par.angCtrl.sampleInt = 0.3;   % Position MPC sample rate
+par.angCtrl.predInt = 0.1;      % Position MPC prediction interval
 
 %% Simulation parameters
 par.sim.tmax = 5;
-par.sim.h = 1e-2; % ODE integration timestep
+par.sim.h = 0.01; % ODE integration timestep
+
+%% fsolve options
+par.settings.solve = optimoptions(@fsolve, 'Display', 'none');

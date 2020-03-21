@@ -1,4 +1,4 @@
-function [u_pos] = positionMPC(ang, pos, t, uref, xref, par)
+function [u_pos] = positionMPC(ang, pos, t, ref, par)
     %% POSITION MPC 
     persistent k; % From MPC HW set 3 
     if isempty(k)
@@ -11,7 +11,7 @@ function [u_pos] = positionMPC(ang, pos, t, uref, xref, par)
     end
     
     %% Optimize input
-    if k/par.posCtrl.sampleInt <= t
+    if k*par.posCtrl.sampleInt <= t
         
         % Adaptive MPC
         setpt = [par.drone.m*par.env.g; 0; 0; ang(6)];
@@ -21,8 +21,8 @@ function [u_pos] = positionMPC(ang, pos, t, uref, xref, par)
             'zoh');
         
         % Sample reference points
-        xrefSampled = interp1(t, xref', t + (0:par.posCtrl.dim.N)*par.posCtrl.predInt)';
-        urefSampled = interp1(t, uref', t + (0:(par.posCtrl.dim.N-1))*par.posCtrl.predInt)';
+        xrefSampled = interp1(ref.t, ref.x.pos', t + (0:par.posCtrl.dim.N)*par.posCtrl.predInt)';
+        urefSampled = interp1(ref.t, ref.u.pos', t + (0:(par.posCtrl.dim.N-1))*par.posCtrl.predInt)';
         u_i = positionControl(LTI_pos, pos, urefSampled, xrefSampled, par) + setpt(1:3);
         k = k + 1;
     end

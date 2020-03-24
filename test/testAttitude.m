@@ -16,4 +16,5 @@ end
 %   pause(0.01);
 % end
 
-[u] = attitudeMPC(LTI, xref, uref);
+[LTI_rot] = simpRotationalDynamics(par, xref);
+[u] = attitudeMPC(LTI_rot, xref, uref);

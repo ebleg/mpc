@@ -1,4 +1,4 @@
-function [u] = attitudeControl(att, LTI, par)
+function [u] = attitudeControl(LTI, xref, uref, par, att)
 %% Attitude controller
 % x_ang: state vector for rotational dynamics, i.e. [p q r phi theta psi]'
 % u_ang: input vector for rotational dynamics, i.e. [u1 u2 u3 u4]
@@ -18,41 +18,42 @@ function [u] = attitudeControl(att, LTI, par)
 %     A_K = A_dis-B_dis*K_LQR;
 
 %% Regulation MPC 
-    par.attCtrl.dim.u = 4;
-    par.attCtrl.dim.x = 6;
-    par.attCtrl.dim.N = 10;
+%     par.attCtrl.dim.u = 4;
+%     par.attCtrl.dim.x = 6;
+%     par.attCtrl.dim.N = 10;
+%     
+%     par.attCtrl.Q = eye(par.attCtrl.dim.x);
+%     par.attCtrl.R = eye(par.attCtrl.dim.u);
+%     par.attCtrl.P = eye(par.attCtrl.dim.x);
     
-    par.attCtrl.Q = eye(par.attCtrl.dim.x);
-    par.attCtrl.R = eye(par.attCtrl.dim.u);
-    par.attCtrl.P = eye(par.attCtrl.dim.x);
-    
-    par.attCtrl.Ts = 0.01;
+%     par.attCtrl.Ts = 0.01;
 
     % prediction matrix
-    [T,S] = predmodgen(LTI, par.attCtrl.dim);
+    [T,S] = predmodgen(LTI, par.angCtrl.dim);
     
     % cost function
-    Qbar = blkdiag(kron(eye(par.attCtrl.dim.N), par.attCtrl.Q), par.attCtrl.P);
-    Rbar = kron(eye(par.posCtrl.dim.N), par.posCtrl.R);
+    Qbar = blkdiag(kron(eye(par.angCtrl.dim.N), par.angCtrl.Q), par.angCtrl.P);
+    Rbar = kron(eye(par.angCtrl.dim.N), par.angCtrl.R);
 
     uref = uref(:);
     xref = xref(:);
     
-    v_lim = ;
-    a_lim = ;
+    v_lim = par.cstr.maxVel;
+    a_lim = par.cstr.maxAcc;
 
     H = S'*Qbar*S + Rbar;
-    h = Rbar*uref + S'*Qbar*T*att + S'*Qbar*xref;
+    h = Rbar'*uref + S'*Qbar*T*(att) + S'*Qbar*xref;
     
 %% Optimization
 
 cvx_begin 
-    variable u_opt(par.attCtrl.dim.u*par.attCtrl.dim.N)
-    minimize(0.5*uopt2'*H*uopt2+h'*uopt2)
-    subject to
-    u_opt<=v_lim;    
+    variable u_opt(par.angCtrl.dim.u*par.angCtrl.dim.N)
+    minimize(0.5*u_opt'*H*u_opt+h'*u_opt)
+%     subject to
+%     u_opt <= v_lim *ones(4*N,1);
 cvx_end
 
+[u] = u_opt(1:par.angCtrl.dim.u);
 %% 
 %     sysd = c2d(sysc,par.attCtrl.Ts);
 %     sim_vec = par.dim.N/par.env.Ts;   % horizon/sampling time

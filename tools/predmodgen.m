@@ -4,8 +4,8 @@ function [P,S,W]=predmodgen(LTI,dim)
 %This function computes the prediction matrices to be used in the
 %optimization problem
 
-LTI.C = eye(dim.x);
-dim.y = dim.x;
+% LTI.C = eye(dim.x);
+% dim.y = dim.x;
 
 % Prediction matrix from initial state
 P=zeros(dim.y*(dim.N),dim.x);
@@ -21,4 +21,4 @@ for k=1:dim.N
     end
 end
 
-
+end

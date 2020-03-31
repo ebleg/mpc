@@ -1,4 +1,4 @@
-%% MAIN FILE
+ %% MAIN FILE
 %
 % Elke Salzmann & Emiel Legrand
 % Delft University of Technology

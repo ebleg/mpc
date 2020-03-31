@@ -1,9 +1,8 @@
-% x = [p q r phi theta psi]';
-% u = [u1 u2 u3 u4]';
 clear
 
 addpath('..');
 addpath('../fun');
+addpath('../fun/ctrl');
 addpath('../fun/mod');
 addpath('../tools')
 run parameters
@@ -30,8 +29,8 @@ u_input = [1 1 1]';
 uref=zeros(par.angCtrl.dim.u, par.angCtrl.dim.N);
 for i=1:par.angCtrl.dim.N
     uref(:,i) = u_input;
-end 
+end
 
 [LTI_rot_c] = simpRotationalDynamics(par, xref);
 [LTI_rot_d] = c2d(LTI_rot_c, par.angCtrl.sampleInt, 'zoh');
-[u] = attitudeMPC(LTI_rot_d, xref, uref, par, att);
+[u, LTI] = attitudeMPC(LTI_rot_d, xref, uref, par, att);

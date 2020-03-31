@@ -4,8 +4,8 @@ function [u] = attitudeControl(LTI, xref, uref, par, att)
 % u_ang: input vector for rotational dynamics, i.e. [u1 u2 u3 u4]
 
 %% Stability analysis
-%     A_dis = c2d(LTI_pos.A, par.attCtrl.Ts, 'zoh');
-%     B_dis = c2d(LTI_pos.B, par.attCtrl.Ts, 'zoh');
+%     A_dis = c2d(LTI_rot.A, par.attCtrl.Ts, 'zoh');
+%     B_dis = c2d(LTI_rot.B, par.attCtrl.Ts, 'zoh');
 % 
 %     controllability(LTI)
 % 
@@ -40,7 +40,7 @@ function [u] = attitudeControl(LTI, xref, uref, par, att)
     
     v_lim = par.cstr.maxVel;
     a_lim = par.cstr.maxAcc;
-
+    
     H = S'*Qbar*S + Rbar;
     h = Rbar'*uref + S'*Qbar*T*(att) + S'*Qbar*xref;
     

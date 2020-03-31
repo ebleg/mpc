@@ -22,8 +22,7 @@ function [u_pos] = positionMPC(ang, pos, t, ref, par)
         
         % Sample reference points
         xrefSampled = interp1(ref.t, ref.x.pos', t + (0:par.posCtrl.dim.N)*par.posCtrl.predInt)';
-        urefSampled = interp1(ref.t, ref.u.pos', t + (0:(par.posCtrl.dim.N-1))*par.posCtrl.predInt)';
-        u_i = positionControl(LTI_pos, pos, urefSampled, xrefSampled, par) + setpt(1:3);
+        u_i = positionControl(LTI_pos, pos, xrefSampled, par) + setpt(1:3);
         k = k + 1;
     end
     

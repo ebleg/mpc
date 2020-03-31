@@ -3,7 +3,11 @@ function [ref] = generateReference(t, path, par)
 %     t=sol.t;
     fprintf('Generating reference states and inputs...')
     tic
-    r = path(t);
+%     r = path(t);
+    r = zeros(3,numel(t));
+    for i=1:numel(t)
+        r(:,i) = path(t(i));
+    end
     nsteps = numel(t);
     ref = struct();
     ref.t = t;

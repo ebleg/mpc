@@ -62,23 +62,24 @@ par.cstr.maxAcc = (0.08 - 0.039)/par.drone.rotor.I*0.85; % Seems reasonable
 par.posCtrl.dim.u = 3; % Input vector length
 par.posCtrl.dim.x = 6; % State vector length
 par.posCtrl.dim.y = 6; % Assume full-state knowledge for now
-par.posCtrl.dim.N = 4; % Prediction horizon
+par.posCtrl.dim.N = 10; % Prediction horizon
 
 % Cost matrices
-par.posCtrl.Q = eye(par.posCtrl.dim.x)*diag([1 1 1 10 10 10]);
-par.posCtrl.R = eye(par.posCtrl.dim.u)*diag([0 1 1]);
-par.posCtrl.P = eye(par.posCtrl.dim.x)*diag([1 1 1 10 10 10]); % Might be overwritten by DARE solution
+par.posCtrl.Q = eye(par.posCtrl.dim.x)*diag([10 10 10 100 100 100]);
+par.posCtrl.R = eye(par.posCtrl.dim.u)*diag([.1 .1 .1]);
+par.posCtrl.P = eye(par.posCtrl.dim.x)*diag([1 1 1 100 100 100]); % Might be overwritten by DARE solution
 
 % Sample rate
-par.posCtrl.sampleInt = 0.05;   % Position MPC sample rate
+par.posCtrl.sampleInt = 0.02;   % Position MPC sample rate
 par.posCtrl.predInt = 0.05;      % Position MPC prediction interval
+[par.posCtrl.T, par.posCtrl.f] = posCstrMatrix(par);
 
 %% Attitude control parameters
 % Problem dimensions
 par.angCtrl.dim.u = 3; % Input vector length
 par.angCtrl.dim.x = 6; % State vector length
 par.angCtrl.dim.y = 6; % Assume full-state knowledge for now
-par.angCtrl.dim.N = 4; % Prediction horizon
+par.angCtrl.dim.N = 8; % Prediction horizon
 
 % Cost matrices
 par.angCtrl.Q = eye(par.angCtrl.dim.x);%*diag([1 1 1 20 20 20]);
@@ -86,11 +87,11 @@ par.angCtrl.R = eye(par.angCtrl.dim.u);
 par.angCtrl.P = eye(par.angCtrl.dim.x);%*diag([1 1 1 20 20 20]); % Might be overwritten by DARE solution
 
 % Sample rate
-par.angCtrl.sampleInt = 0.005;   % Position MPC sample rate; should be 10 times smaller than the sample rate for the position control
-par.angCtrl.predInt = 0.1;      % Position MPC prediction interval
+par.angCtrl.sampleInt = 0.02;   % Position MPC sample rate
+par.angCtrl.predInt = 0.02;      % Position MPC prediction interval
 
 %% Simulation parameters
-par.sim.tmax = 5;
+par.sim.tmax = 12;
 par.sim.h = 0.01; % ODE integration timestep
 
 %% fsolve options

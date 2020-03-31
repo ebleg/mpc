@@ -88,7 +88,6 @@ par.angCtrl.P = eye(par.angCtrl.dim.x);%*diag([1 1 1 20 20 20]); % Might be over
 % Sample rate
 par.angCtrl.sampleInt = 0.005;   % Position MPC sample rate; should be 10 times smaller than the sample rate for the position control
 par.angCtrl.predInt = 0.1;      % Position MPC prediction interval
-par.angCtrl.simTime = 30;
 
 %% Simulation parameters
 par.sim.tmax = 5;

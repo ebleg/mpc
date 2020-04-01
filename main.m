@@ -24,16 +24,16 @@ run header
 % fprintf('Objective trajectory: Ellipsoidal spiral\n') 
 % path = @(t) [4*cos(t); 4*sin(t); t/3];
 
-fprintf('\nObjective trajectory: RRT* generated path\n\n') 
-load('shapes.mat');
-rrtpath = load('path.mat');
-rrtpath = rrtpath.path;
-load('nodes.mat');
-par.sim.tmax = 20;
-
-path = @(t) piecewiseLinearPath(nodes, rrtpath, par, t);
-% fprintf('\nObjective trajectory: Nondifferentiable 2D trajectory\n\n') 
-% path = @(t) [t; 0*t; sign(t-2)+1]; 
+% fprintf('\nObjective trajectory: RRT* generated path\n\n') 
+% load('shapes.mat');
+% rrtpath = load('path.mat');
+% rrtpath = rrtpath.path;
+% load('nodes.mat');
+% par.sim.tmax = 20;
+% 
+% path = @(t) piecewiseLinearPath(nodes, rrtpath, par, t);
+fprintf('\nObjective trajectory: Nondifferentiable 2D trajectory\n\n') 
+path = @(t) [t; 0*t; sign(t-2)+1]; 
 
 % fprintf('Objective trajectory: Fly to a point,  2D\n') 
 % path = @(t) [0*t; 0*t; 0*t+1]; % Fly straight up
@@ -70,7 +70,7 @@ for i=2:(nsteps-predictionBuffer)
                                  ref, par);
     sol.x.ang(:,i) = [zeros(3,1); sol.u.pos(2:3,i); ref.x.ang(6,i)];
     f = @(x) translationalDynamics(x, [sol.u.pos(:,i); ref.x.ang(6,i)] , par);
-    sol.x.pos(:,i) = RK4(f, sol.x.pos(:,i-1), par.sim.h);
+    sol.x.pos(:,i) = GL4(f, sol.x.pos(:,i-1), par);
 end
 fprintf('Simulation ended - '); toc;
 
@@ -79,8 +79,7 @@ close all;
 figure; ax = gca; axis equal; grid; grid minor; hold on;
 title('Quadcopter simulation'); xlabel('x [m]'); ylabel('y [m]'); zlabel('z [m]');
 % refPlot = plotTrajectory(ax, ref.t, ref.x.pos, '.', 'Reference trajectory');
-solPlot = plotTrajectory(ax, sol.t, sol.x.pos, '.', 'Reference trajectory');
-for k=1:10
-   plot(shapes(k).alpha); 
-end
-simulateDrone(ax, sol, par);
+refPlot = plotTrajectory(ax, ref.t, ref.x.pos, '.', 'Reference trajectory');
+solPlot = plotTrajectory(ax, sol.t, sol.x.pos, '.', 'Simulated trajectory');
+legend();
+% simulateDrone(ax, sol, par);

@@ -35,14 +35,13 @@ v_lim = par.cstr.maxVel;
 a_lim = par.cstr.maxAcc;
 
 H = S'*Qbar*S + Rbar;
-% h = att'*T'*Qbar*S - xref'*Qbar*S;% - Rbar'*uref;
 h = Rbar'*uref + S'*Qbar*T*att + S'*Qbar*xref;
-
+    
 % Optimization
 N = par.angCtrl.dim.N;
 cvx_begin 
     variable u_opt(par.angCtrl.dim.u*N)
-    minimize(0.5*quad_form(u_opt,H)+h'*u_opt)
+    minimize(0.5*u_opt'*H*u_opt+h'*u_opt)
 %     subject to
 %     u_opt <= v_lim *ones(4*N,1);
 cvx_end

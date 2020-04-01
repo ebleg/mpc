@@ -16,4 +16,3 @@ function [y2] = GL4(fcn, y1, par)
     
     y2 = y1 + par.sim.h*(0.5*k(1:n) + 0.5*k(n+1:end));
 end
-

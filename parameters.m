@@ -87,7 +87,7 @@ par.angCtrl.R = eye(par.angCtrl.dim.u);
 par.angCtrl.P = eye(par.angCtrl.dim.x);%*diag([1 1 1 20 20 20]); % Might be overwritten by DARE solution
 
 % Sample rate
-par.angCtrl.sampleInt = 0.02;   % Position MPC sample rate
+par.angCtrl.sampleInt = 0.002;   % Position MPC sample rate; should be at least 10 times smaller than the sample rate for the position control and a divisor of the sample rate for the position control
 par.angCtrl.predInt = 0.02;      % Position MPC prediction interval
 
 %% Simulation parameters

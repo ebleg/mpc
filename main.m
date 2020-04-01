@@ -60,6 +60,10 @@ predictionBuffer = ceil(par.posCtrl.dim.N*par.posCtrl.predInt/par.sim.h);
 %% Simulation loop
 fprintf('Starting simulation loop...\n'); tic;
 for i=2:(nsteps-predictionBuffer)
+    for j=1:par.posCtrl.sampleInt/par.angCtrl.sampleInt
+        MPC = 0; % 0 for regular MPC, 1 for output MPC
+        sol.u.ang(:,j) = attitudeMPC(MPC, ref, par, sol.x.ang(:,i-1), [], []);
+    end
     sol.u.pos(:,i) = positionMPC(sol.x.ang(:,i-1), ...
                                  sol.x.pos(:,i-1), ...
                                  sol.t(i), ...
@@ -74,9 +78,9 @@ fprintf('Simulation ended - '); toc;
 close all;
 figure; ax = gca; axis equal; grid; grid minor; hold on;
 title('Quadcopter simulation'); xlabel('x [m]'); ylabel('y [m]'); zlabel('z [m]');
-refPlot = plotTrajectory(ax, ref.t, ref.x.pos, '.', 'Reference trajectory');
-% solPlot = plotTrajectory(ax, sol.t, sol.x.pos, '.', 'Reference trajectory');
+% refPlot = plotTrajectory(ax, ref.t, ref.x.pos, '.', 'Reference trajectory');
+solPlot = plotTrajectory(ax, sol.t, sol.x.pos, '.', 'Reference trajectory');
 for k=1:10
    plot(shapes(k).alpha); 
 end
-% simulateDrone(ax, sol, par);
+simulateDrone(ax, sol, par);

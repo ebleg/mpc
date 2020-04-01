@@ -1,6 +1,5 @@
 function [ref] = generateReference(t, path, par)
     % Assumed the reference yaw angle is always tangent to the path
-%     t=sol.t;
     fprintf('Generating reference states and inputs...')
     tic
 %     r = path(t);

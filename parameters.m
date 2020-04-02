@@ -57,6 +57,8 @@ par.cstr.maxVel = 285; % [rad/s], Include 85% SF margin to reduce wear on the ge
 % 0.08 = Pel,max*eff/omega_max, 0.039 = k_T*omega_max^2
 par.cstr.maxAcc = (0.08 - 0.039)/par.drone.rotor.I*0.85; % Seems reasonable
 
+par.cstr.maxAng = 0.5; %rad
+
 %% Position control parameters
 % Problem dimensions
 par.posCtrl.dim.u = 3; % Input vector length
@@ -82,9 +84,12 @@ par.angCtrl.dim.y = 6; % Assume full-state knowledge for now
 par.angCtrl.dim.N = 8; % Prediction horizon
 
 % Cost matrices
-par.angCtrl.Q = eye(par.angCtrl.dim.x);%*diag([1 1 1 20 20 20]);
-par.angCtrl.R = eye(par.angCtrl.dim.u);
-par.angCtrl.P = eye(par.angCtrl.dim.x);%*diag([1 1 1 20 20 20]); % Might be overwritten by DARE solution
+par.angCtrl.Q = eye(par.angCtrl.dim.x)*diag([1 1 1 20 20 20]);%*diag([1 1 1 20 20 20]);
+par.angCtrl.R = eye(par.angCtrl.dim.u)*diag([0.1 0.1 0.1]);
+par.angCtrl.P = eye(par.angCtrl.dim.x)*diag([1 1 1 20 20 20]); % Might be overwritten by DARE solution
+
+% Constraints
+[par.angCtrl.F, par.angCtrl.f] = attCstrMatrix(par);
 
 % Sample rate
 par.angCtrl.sampleInt = 0.002;   % Position MPC sample rate; should be at least 10 times smaller than the sample rate for the position control and a divisor of the sample rate for the position control
@@ -96,3 +101,4 @@ par.sim.h = 0.01; % ODE integration timestep
 
 %% fsolve options
 par.settings.solve = optimoptions(@fsolve, 'Display', 'none');
+par.settings.opts = optimoptions('quadprog','Display','off');

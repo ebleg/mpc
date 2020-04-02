@@ -1,4 +1,7 @@
 function [u_opt] = attitudeOutputControl(LTI, par, x0, yref)
+%% Stability analysis
+controllability(LTI)
+observability(LTI)
 
 %% Offset-free MPC with output feedback
 % In case the states are not known and considering disturbances
@@ -52,6 +55,16 @@ disp(['Rank of augmented dynamics = ', num2str(rank_aug), ', rank of system = ',
 %% Optimization
 [T,S]=predmodgen_output(LTI_e,dime);
 
+% Constraint setup
+a_lim = par.cstr.maxAcc*ones(N-1,1);
+x_lim = par.cstr.maxAng;
+
+F = zeros(N-1,N*par.angCtrl.dim.u);
+for i = 1:(N-1)
+   F(i, (i-1)*nu + 1) = -1;
+   F(i, i*nu + 1) = 1;
+end
+
 Qbar=blkdiag(kron(eye(dime.N),Q_e),P_e);
 Rbar=kron(eye(dim.N),R_e);
 H_e=S'*Qbar*S+Rbar;
@@ -83,8 +96,15 @@ for k=1:simTime
     H_OTS=blkdiag(zeros(dim.x),eye(dim.u));
     h_OTS=zeros(dim.x+dim.u,1);
     
-    opts = optimoptions('quadprog','Display','off');
-    x_r_u_r=quadprog(H_OTS,h_OTS,[],[],A_OTS, b_OTS,[],[],[],opts);
+    quadprog(H,f,A,b) minimizes 1/2*x'*H*x + f'*x subject to the restrictions A*x ? b.
+    
+    cvx_begin quiet
+        variable x_r_u_r(dime.x+dime.u)
+        minimize (1/2*x_r_u_r'*H_OTS*x + h_OTS'*x_r_u_r)
+        subject to
+        A_OTS * x_r_u_r <= b_OTS;
+    cvx_end
+%     x_r_u_r=quadprog(H_OTS,h_OTS,[],[],A_OTS, b_OTS,[],[],[],par.settings.opts);
     x_r = x_r_u_r(1:dim.x);
     u_r = x_r_u_r(dim.x+1:end);
     
@@ -93,7 +113,13 @@ for k=1:simTime
     cvx_begin quiet
         variable u_N(dim.u*dim.N)
         minimize ( (1/2)*quad_form(u_N,H_e) + (h_e*[x_e_0; x_r_e; u_r])'*u_N )
-%         u_N <= v_lim *ones(4*N,1);
+%         subject to
+%         % input contraints
+%         par.angCtrl.F*u_N <= par.angCtrl.f
+%         F * u_N <= a_lim
+%         % state constraints
+%         S*u_N <= -T*att + x_lim;
+%         S*u_N >= -T*att - x_lim;
     cvx_end
     
     u_opt(:,k) = u_N(1:dim.u);
@@ -101,13 +127,17 @@ for k=1:simTime
     % Compute the state/output evolution
     x_e(:,k+1)=LTI_e.A*x_e_0 + LTI_e.B*u_opt(:,k);
     y(:,k+1)=LTI_e.C*x_e(:,k+1);
-
+ 
     % Update extended-state estimation
     x_e_hat(:,k+1)=LTI_e.A*x_e_hat(:,k)+LTI_e.B*u_opt(:,k)+G*(y(:,k)-LTI_e.C*x_e_hat(:,k));
 
     % Calculations on the real system
 %     x(:,k+1) = LTI.A*x(:,k) + B*u(:,k) + LTI.Bd*d_hat(:,k); %
 %     y(:,k) = LTI.C*x(:,k) + LTI.Cd*d_hat(:,k);
+
+%     [P,L,G] = dare(A,B,par.angCtrl.Q,par.angCtrl.R);
+%     Vf(k) = 0.5*x(:,k)'*P*x(:,k);
+%     l(k) = 0.5*x(:,k)'*Q*x(:,k);
 end
 
 end

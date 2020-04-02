@@ -1,49 +1,57 @@
-function [u_opt] = attitudeControl(LTI, xref, uref, par, att)
+function [u_opt] = attitudeControl(LTI, xref, uref, par, att) %, x0
 %% Attitude controller
-% x_ang: state vector for rotational dynamics, i.e. [p q r phi theta psi]'
-% u_ang: input vector for rotational dynamics, i.e. [u1 u2 u3 u4]
+% x_ang: state vector for rotational dynamics, i.e. [phidat thetadot psidot phi theta psi]'
+% u_ang: input vector for rotational dynamics, i.e. [U2 U3 U4];
+
+
 
 %% Stability analysis
-%     A_dis = c2d(LTI_rot.A, par.attCtrl.Ts, 'zoh');
-%     B_dis = c2d(LTI_rot.B, par.attCtrl.Ts, 'zoh');
-% 
-%     controllability(LTI)
-% 
-%     Q = eye(par.dim.x);
-%     R = eye(par.dim.u);
-%     P = eye(par.dim.x);
+controllability(LTI)
+     
+%     [P,L,G] = idare(A_d,B_d,Q,R);
 %     
-%     [X,L,K_LQR] = idare(A_dis,B_dis,Q,R);
-%     
-%     A_K = A_dis-B_dis*K_LQR;
+%     A_K = A_d-B_d*G;
 
-%% Regulation MPC    
+%% Regular MPC    
 %     att = sol.x.ang(:,i-1);
 %     LTI = LTI_rot_d;
+N = par.angCtrl.dim.N;
     
 % prediction matrix
 [T,S] = predmodgen(LTI, par.angCtrl.dim);
 
 % cost function
-Qbar = blkdiag(kron(eye(par.angCtrl.dim.N), par.angCtrl.Q), par.angCtrl.P);
-Rbar = kron(eye(par.angCtrl.dim.N), par.angCtrl.R);
+Qbar = blkdiag(kron(eye(N), par.angCtrl.Q), par.angCtrl.P);
+Rbar = kron(eye(N), par.angCtrl.R);
 
-uref = uref(1: par.angCtrl.dim.N*par.angCtrl.dim.u)';
-xref = xref(1:(par.angCtrl.dim.N+1)*par.angCtrl.dim.x)';
+uref = uref(1: N*par.angCtrl.dim.u)';
+xref = xref(1:(N+1)*par.angCtrl.dim.x)';
 
+% Constraint
 v_lim = par.cstr.maxVel;
-a_lim = par.cstr.maxAcc;
+a_lim = par.cstr.maxAcc*ones(N-1,1);
+x_lim = par.cstr.maxAng;
+
+F = zeros(N-1,N*par.angCtrl.dim.u);
+for i = 1:(N-1)
+   F(i, (i-1)*nu + 1) = -1;
+   F(i, i*nu + 1) = 1;
+end
 
 H = S'*Qbar*S + Rbar;
 h = Rbar'*uref + S'*Qbar*T*att + S'*Qbar*xref;
     
 % Optimization
-N = par.angCtrl.dim.N;
-cvx_begin 
+cvx_begin quiet
     variable u_opt(par.angCtrl.dim.u*N)
     minimize(0.5*u_opt'*H*u_opt+h'*u_opt)
 %     subject to
-%     u_opt <= v_lim *ones(4*N,1);
+%     % input contraints
+%     par.angCtrl.F*u_N <= par.angCtrl.f
+%     F * u_N <= a_lim
+%     % state constraints
+%     S*u_N <= -T*att + x_lim;
+%     S*u_N >= -T*att - x_lim;
 cvx_end
 
 [u_opt] = u_opt(1:par.angCtrl.dim.u);

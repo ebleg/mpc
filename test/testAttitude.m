@@ -31,8 +31,6 @@ run parameters
 %   pause(0.01);
 % end
 
-MPC = 0; %0 for regulation MPC, 1 for output MPC
-
 par.sim.tmax = 20;
 path = @(t) [0*t 0*t t]; % Fly straight up
 
@@ -53,7 +51,7 @@ sol.x.ang(:,1) = ref.x.ang(:,1);
 predictionBuffer = ceil(par.angCtrl.dim.N*par.angCtrl.predInt/par.sim.h);
 
 for i=2:(nsteps-predictionBuffer)
-    sol.u.ang(:,i) = attitudeMPC(MPC, ref, par, sol.x.ang(:,i-1), [],[]);
+    sol.u.ang(:,i) = attitudeMPC(ref, par, sol.x.ang(:,i-1), [],[]);
 %     sol.x.ang(:,i) = [zeros(3,1); sol.u.pos(2:3,i); ref.x.ang(6,i)];
 %     f = @(x) translationalDynamics(x, [sol.u.pos(:,i); ref.x.ang(6,i)] , par);
 %     sol.x.pos(:,i) = RK4(f, sol.x.pos(:,i-1), par.sim.h);

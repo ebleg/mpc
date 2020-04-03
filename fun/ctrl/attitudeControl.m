@@ -1,4 +1,4 @@
-function u_opt = attitudeControl(LTI, xref, uref, par, att) %, x0
+function u_opt = attitudeControl(LTI, xref, par, att) %, x0
 %% Attitude controller
 % x_ang: state vector for rotational dynamics, i.e. [phidot thetadot psidot phi theta psi]'
 % u_ang: input vector for rotational dynamics, i.e. [U2 U3 U4];
@@ -22,7 +22,7 @@ N = par.angCtrl.dim.N;
 Qbar = blkdiag(kron(eye(N), par.angCtrl.Q), par.angCtrl.P);
 Rbar = kron(eye(N), par.angCtrl.R);
 
-uref = uref(1: N*par.angCtrl.dim.u)';
+% uref = uref(1: N*par.angCtrl.dim.u)';
 xref = xref(1:(N+1)*par.angCtrl.dim.x)';
 
 % Constraint
@@ -36,15 +36,15 @@ xref = xref(1:(N+1)*par.angCtrl.dim.x)';
 % end
 
 H = S'*Qbar*S + Rbar;
-h = Rbar'*uref + S'*Qbar*T*att + S'*Qbar*xref;
+h = S'*Qbar*T*att + S'*Qbar*xref; %+Rbar'*uref
     
 % Optimization
 cvx_begin quiet
     variable u_opt(par.angCtrl.dim.u*N)
     minimize(0.5*u_opt'*H*u_opt+h'*u_opt)
-%     subject to
-%     % input contraints
-%     par.angCtrl.F*u_N <= par.angCtrl.f
+    subject to
+    % input contraints
+    par.angCtrl.F*u_opt <= par.angCtrl.f;
 %     F * u_N <= a_lim
 %     % state constraints
 %     S*u_N <= -T*att + x_lim;

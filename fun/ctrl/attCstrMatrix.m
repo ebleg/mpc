@@ -8,7 +8,7 @@ F = zeros(2*par.angCtrl.dim.u, par.angCtrl.dim.u*par.angCtrl.dim.N);
 f = zeros(2*par.angCtrl.dim.u*par.angCtrl.dim.N,1);
 
 tmp_F = [1 0 0; -1 0 0; 0 1 0; 0 -1 0; 0 0 1; 0 0 -1];
-F = repmat(tmp_F,par.angCtrl.dim.N, 1);
+F = repmat(tmp_F, par.angCtrl.dim.N, par.angCtrl.dim.N);
 
 cstr23 = K_f * max_vel^2;
 cstr4 = 2 * K_m * max_vel^2;

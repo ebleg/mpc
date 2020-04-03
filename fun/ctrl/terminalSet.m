@@ -3,8 +3,8 @@ function terminalSet(x, P)
 % X_f = {x|x'Px<=1
 % Other possiblity : maximal invariant constraint admissible set for x(k+1) = A_K*x(k)
 
-if x'*P*x<=1
-    disp('Point is in terminal set')
+if ~(x'*P*x<=1)
+    warning ('Point is not in terminal set')
 end
 
 end

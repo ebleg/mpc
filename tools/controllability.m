@@ -8,10 +8,8 @@ ctrl_rank = rank(ctrl_matrix);
 
 st_rank = size(A);
 
-if ctrl_rank == st_rank
-    disp('System is controllable')
-else
-    disp('Not all states are controllable')
+if ~(ctrl_rank == st_rank)
+    warning('System is not controllable')
 end
 
 end

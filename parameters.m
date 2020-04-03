@@ -64,16 +64,16 @@ par.cstr.maxAng = 0.5; %rad
 par.posCtrl.dim.u = 3; % Input vector length
 par.posCtrl.dim.x = 6; % State vector length
 par.posCtrl.dim.y = 6; % Assume full-state knowledge for now
-par.posCtrl.dim.N = 10; % Prediction horizon
+par.posCtrl.dim.N = 5; % Prediction horizon
 
 % Cost matrices
-par.posCtrl.Q = eye(par.posCtrl.dim.x)*diag([10 10 10 100 100 100]);
+par.posCtrl.Q = eye(par.posCtrl.dim.x)*diag([1 1 1 1000 1000 1000]);
 par.posCtrl.R = eye(par.posCtrl.dim.u)*diag([.1 .1 .1]);
-par.posCtrl.P = eye(par.posCtrl.dim.x)*diag([1 1 1 100 100 100]); % Might be overwritten by DARE solution
+par.posCtrl.P = eye(par.posCtrl.dim.x)*diag([1 1 1 10 10 10]); % Might be overwritten by DARE solution
 
 % Sample rate
 par.posCtrl.sampleInt = 0.02;   % Position MPC sample rate
-par.posCtrl.predInt = 0.05;      % Position MPC prediction interval
+par.posCtrl.predInt = 0.02;      % Position MPC prediction interval
 [par.posCtrl.T, par.posCtrl.f] = posCstrMatrix(par);
 
 %% Attitude control parameters
@@ -97,7 +97,7 @@ par.angCtrl.predInt = 0.02;      % Position MPC prediction interval
 
 %% Simulation parameters
 par.sim.tmax = 12;
-par.sim.h = 0.01; % ODE integration timestep
+par.sim.h = 0.02; % ODE integration timestep
 
 %% fsolve options
 par.settings.solve = optimoptions(@fsolve, 'Display', 'none');

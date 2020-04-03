@@ -10,10 +10,10 @@ function [p] = plotDrone(ax, sol, i, par)
     end
     
     % For individual thrust if angular control is included as well
-    Tvec = par.drone.u2omega*[sol.u.pos(1,i); sol.u.ang(:,i)];
-    Tvec = repmat(Tvec', 3, 1);
-    droneZaxis = repmat(droneZaxis, 1, 4);
-    Tvec = Tvec.*droneZaxis;
+%     Tvec = par.drone.u2omega*[sol.u.pos(1,i); sol.u.ang(:,i)];
+%     Tvec = repmat(Tvec', 3, 1);
+%     droneZaxis = repmat(droneZaxis, 1, 4);
+%     Tvec = Tvec.*droneZaxis;
     
     p.bar1 = line(ax, rotorPts(1,1:2:3), rotorPts(2,1:2:3), rotorPts(3,1:2:3),...
                   'Marker', 'o', 'MarkerFaceColor', 'black', ...
@@ -21,7 +21,7 @@ function [p] = plotDrone(ax, sol, i, par)
     p.bar2 = line(ax, rotorPts(1,2:2:4), rotorPts(2,2:2:4), rotorPts(3,2:2:4),...
                   'Marker', 'o', 'MarkerFaceColor', 'black', ...
                   'MarkerEdgeColor', 'black', 'Color', 'black');
-    p.vectors = quiver3(ax, rotorPts(1,:), rotorPts(2,:), rotorPts(3,:), ...
-                        Tvec(1,:), Tvec(2,:), Tvec(3,:));                       
+%     p.vectors = quiver3(ax, rotorPts(1,:), rotorPts(2,:), rotorPts(3,:), ...
+%                         Tvec(1,:), Tvec(2,:), Tvec(3,:));                       
 end
 

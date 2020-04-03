@@ -1,9 +1,7 @@
-function [u_opt] = attitudeControl(LTI, xref, uref, par, att) %, x0
+function u_opt = attitudeControl(LTI, xref, uref, par, att) %, x0
 %% Attitude controller
-% x_ang: state vector for rotational dynamics, i.e. [phidat thetadot psidot phi theta psi]'
+% x_ang: state vector for rotational dynamics, i.e. [phidot thetadot psidot phi theta psi]'
 % u_ang: input vector for rotational dynamics, i.e. [U2 U3 U4];
-
-
 
 %% Stability analysis
 controllability(LTI)
@@ -13,7 +11,7 @@ controllability(LTI)
 %     A_K = A_d-B_d*G;
 
 %% Regular MPC    
-%     att = sol.x.ang(:,i-1);
+%     att = sol.x.ang(:,1);
 %     LTI = LTI_rot_d;
 N = par.angCtrl.dim.N;
     
@@ -28,15 +26,14 @@ uref = uref(1: N*par.angCtrl.dim.u)';
 xref = xref(1:(N+1)*par.angCtrl.dim.x)';
 
 % Constraint
-v_lim = par.cstr.maxVel;
-a_lim = par.cstr.maxAcc*ones(N-1,1);
-x_lim = par.cstr.maxAng;
-
-F = zeros(N-1,N*par.angCtrl.dim.u);
-for i = 1:(N-1)
-   F(i, (i-1)*nu + 1) = -1;
-   F(i, i*nu + 1) = 1;
-end
+% a_lim = par.cstr.maxAcc*ones(N-1,1);
+% x_lim = par.cstr.maxAng;
+% 
+% F = zeros(N-1,N*par.angCtrl.dim.u);
+% for i = 1:(N-1)
+%    F(i, (i-1)*dim.u + 1) = -1;
+%    F(i, i*dim.u + 1) = 1;
+% end
 
 H = S'*Qbar*S + Rbar;
 h = Rbar'*uref + S'*Qbar*T*att + S'*Qbar*xref;
@@ -54,7 +51,6 @@ cvx_begin quiet
 %     S*u_N >= -T*att - x_lim;
 cvx_end
 
-[u_opt] = u_opt(1:par.angCtrl.dim.u);
-    
+u_opt = u_opt(1:par.angCtrl.dim.u);
 
 end

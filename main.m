@@ -55,20 +55,22 @@ ref = generateReference(sol.t, path, par);
 %% Set initial conditions
 sol.x.pos(:,1) = ref.x.pos(:,1);%+ [0 0 0 0.2 0 0.2]';
 sol.x.ang(:,1) = ref.x.ang(:,1);
+% dx_ang(:,1) = [0 0 0 0 0 0]';
 
 predictionBuffer = ceil(par.posCtrl.dim.N*par.posCtrl.predInt/par.sim.h);
 
 %% Simulation loop
 fprintf('Starting simulation loop...\n'); tic;
 for i=2:(nsteps-predictionBuffer)
-%     for j=1:par.posCtrl.sampleInt/par.angCtrl.sampleInt
-%         sol.u.ang(:,j) = attitudeMPC(ref, par, sol.t, sol.x.ang(:,i-1), [], []);
-%     end
     sol.u.pos(:,i) = positionMPC(sol.x.ang(:,i-1), ...
                                  sol.x.pos(:,i-1), ...
                                  sol.t(i), ...
                                  ref, par);
     sol.x.ang(:,i) = [zeros(3,1); sol.u.pos(2:3,i); ref.x.ang(6,i)];
+%     sol.x.ang(:,i) = [dx_ang(1:3,i-1); sol.u.pos(2:3,i); ref.x.ang(6,i)];
+%     sol.u.ang(:,i) = attitudeMPC(ref, par, sol.t, sol.x.ang(:,i-1), [],[]);
+%     omega = [-1 1 -1 1]*[sol.u.pos(1,i) sol.u.ang(:,i)']';
+%     dx_ang(:,i) = rotationalDynamics(sol.x.ang(:,i), [sol.u.ang(:,i); omega], par);
     f = @(x) translationalDynamics(x, [sol.u.pos(:,i); ref.x.ang(6,i)] , par);
     sol.x.pos(:,i) = GL4(f, sol.x.pos(:,i-1), par);
 end
@@ -82,4 +84,4 @@ title('Quadcopter simulation'); xlabel('x [m]'); ylabel('y [m]'); zlabel('z [m]'
 refPlot = plotTrajectory(ax, ref.t, ref.x.pos, '.', 'Reference trajectory');
 solPlot = plotTrajectory(ax, sol.t, sol.x.pos, '.', 'Simulated trajectory');
 legend();
-% simulateDrone(ax, sol, par);
+simulateDrone(ax, sol, par);

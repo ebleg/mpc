@@ -8,30 +8,6 @@ addpath('../fun/vis');
 addpath('../tools');
 run parameters
 
-% xref=zeros(par.angCtrl.dim.x, par.angCtrl.dim.N+1);
-% for i=1:par.angCtrl.dim.N+1
-%     xref(:,i) = [1 1 1 phi(i) theta(i) psi(i)]';
-% end
-% 
-% att = xref(:,1);
-% 
-% u_input = [1 1 1]';
-% uref=zeros(par.angCtrl.dim.u, par.angCtrl.dim.N);
-% for i=1:par.angCtrl.dim.N
-%     uref(:,i) = u_input;
-% end
-% 
-% t = 0:pi/100:pi;
-% phi = 5*cos(t);
-% theta = 5*sin(t);
-% psi = t;
-% plot3(phi,theta,psi,'*r');
-% for i=1:length(phi)
-%   plot3(phi(i),theta(i),psi(i),'*r');
-%   hold on;
-%   pause(0.01);
-% end
-
 par.sim.tmax = 20;
 
 % path = @(t) [0*t; 0*t; t]; % Fly straight up
@@ -59,14 +35,7 @@ predictionBuffer = ceil(par.angCtrl.dim.N*par.angCtrl.predInt/par.sim.h);
 
 for i=2:(nsteps-predictionBuffer)
     disp(num2str(i));
-%     sol.u.ang(:,i) = attitudeMPC(ref, par, sol.t(i), sol.x.ang(:,i-1), [],[]);
-    sol.u.ang(:,i) = attitudeMPC(ref, par, sol.t(i), sol.x.ang(:,i-1), [],[]);
-%     omega = -sol.u.ang(3,i)/par.drone.rotor.Km
-%     sol.x.ang(:,i) = rotationalDynamics([sol.u.pos(2:3,i); ref.x.ang(3,i-1); sol.x.ang(4:6,i-1)], [sol.u.pos(1,i); sol.u.ang(:,i)] , par);
-%     sol.x.ang(:,i) = rotationalDynamics(sol.x.ang(:,i-1),...
-%                                         [sol.u.pos(1,i); sol.u.ang(:,i)] , par);
-%     sol.x.ang(:,i) = ref.x.ang(:,i);
-%     sol.x.ang(:,i) = [ref.x.ang(1:3,i); temp_x(4:6,i)];
+    sol.u.ang(:,i) = attitudeMPC([], par, ref.t, [], xref(:,1), ref.x.ang(:,i));
     g = @(x) rotationalDynamics(x, [sol.u.pos(1,i); sol.u.ang(:,i)] , par);
     sol.x.ang(:,i) = GL4(g, sol.x.ang(:,i-1), par);
 end

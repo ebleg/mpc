@@ -43,50 +43,68 @@ path = @(t) [4*cos(t); 4*sin(t); t/3];
 
 %% Simulation initialization
 sol = struct();
-sol.t = (0:par.sim.h:par.sim.tmax);
-nsteps = numel(sol.t);
+sol.t.pos = (0:par.sim.h:par.sim.tmax);
+sol.t.ang = (0:par.sim.h*(par.angCtrl.sampleInt/par.posCtrl.sampleInt):par.sim.tmax);
+nsteps_pos = numel(sol.t.pos);
+nsteps_ang = numel(sol.t.ang);
 
-sol.x.pos = nan(par.posCtrl.dim.x, nsteps);
-sol.x.ang = nan(par.angCtrl.dim.x, nsteps);
-sol.u.pos = nan(par.posCtrl.dim.u, nsteps);
-sol.u.ang = nan(par.angCtrl.dim.u, nsteps);
+sol.x.pos = nan(par.posCtrl.dim.x, nsteps_pos);
+sol.x.ang = nan(par.angCtrl.dim.x, nsteps_ang);
+sol.u.pos = nan(par.posCtrl.dim.u, nsteps_pos);
+sol.u.ang = nan(par.angCtrl.dim.u, nsteps_ang);
 
 %% Path & reference states
-ref = generateReference(sol.t, path, par);
+ref_pos = generateReference(sol.t.pos, path, par);
+ref_ang = generateReference(sol.t.ang, path, par);
 
 %% Set initial conditions
-sol.x.pos(:,1) = ref.x.pos(:,1);%+ [0 0 0 0.2 0 0.2]';
-sol.x.ang(:,1) = ref.x.ang(:,1);
+frame = par.posCtrl.sampleInt/par.angCtrl.sampleInt;
+sol.x.pos(:,1) = ref_pos.x.pos(:,1);%+ [0 0 0 0.2 0 0.2]';
+sol.x.ang(:,1:frame) = ref_ang.x.ang(:,1:frame);
 
 predictionBufferPos = ceil(par.posCtrl.dim.N*par.posCtrl.predInt/par.sim.h);
 predictionBufferAng = ceil(par.angCtrl.dim.N*par.angCtrl.predInt/par.sim.h);
-
 predictionBuffer = max(predictionBufferPos, predictionBufferAng);
 %% Simulation loop
 fprintf('Starting simulation loop...\n'); tic;
 for i=2:50
-    sol.u.pos(:,i) = positionMPC(sol.x.ang(:,i-1), ...
+    sol.u.pos(:,i) = positionMPC(sol.x.ang(:,frame*(i-2)+10), ...
                                  sol.x.pos(:,i-1), ...
-                                 sol.t(i), ...
-                                 ref, par);
-    sol.u.ang(:,i) = attitudeMPC(ref, par, sol.t(i), sol.x.ang(:,i-1), [],[]);
-	omega = -sol.u.ang(3,i)/par.drone.rotor.Km;
-%     sol.x.ang(:,i) = [zeros(3,1); sol.u.pos(2:3,i); ref.x.ang(6,i)];
-    sol.x.ang(:,i) = rotationalDynamics([sol.u.pos(2:3,i); sol.x.ang(3:6,i-1)],...
-                                        [sol.u.ang(:,i); omega], par);
-    f = @(x) translationalDynamics(x, [sol.u.pos(:,i); sol.x.ang(6,i)] , par);
-%     f = @(x) translationalDynamics(x, [sol.u.pos(:,i); ref.x.ang(6,i)] , par);
+                                 sol.t.pos(i), ...
+                                 ref_pos, par);
+    temp_u = nan(par.angCtrl.dim.u,frame+1);
+    temp_x = nan(par.angCtrl.dim.x,frame+1);
+    temp_x(:,1) = sol.x.ang(:,frame*(i-1));
+    for j=2:frame+1
+        disp([num2str(i), ', ' num2str(j)]);
+        % output MPC
+%         temp_u(:,j) = attitudeMPC([], par, sol.t.ang(frame*(i-2)+j), [],...
+%                                 ref_ang.x.ang(:,1),...
+%                                 ref_ang.x.ang(:,frame*(i-2)+j-1)); % Output MPC
+        % regular MPC
+        temp_u(:,j) = attitudeMPC(ref_ang, par, sol.t.ang(frame*(i-2)+j), temp_x(:,j-1), [],[]);
+        g = @(x) rotationalDynamics(x, [sol.u.pos(1,i); temp_u(:,j)] , par);
+        temp_x(:,j) = GL4(g, temp_x(:,j-1), par);
+    end
+    sol.u.ang(:,frame*(i-2)+2:frame*(i-2)+11) = temp_u(:,2:frame+1);
+    sol.x.ang(:,frame*(i-1)+1:frame*(i-1)+10) = temp_x(:,2:frame+1); 
+    f = @(x) translationalDynamics(x, [sol.u.pos(:,i); sol.x.ang(6,frame*i)] , par);
     sol.x.pos(:,i) = GL4(f, sol.x.pos(:,i-1), par);
 end
 fprintf('Simulation ended - '); toc;
 
 %% Visualisation
+sol.x.pos = repelem(sol.x.pos,1,10);
+sol.x.pos = sol.x.pos(:,1:nsteps_ang);
+sol.u.pos = repelem(sol.u.pos,1,10);
+sol.u.pos = sol.u.pos(:,1:nsteps_ang);
+
 close all;
 figure; ax = gca; axis equal; grid; grid minor; hold on;
 title('Quadcopter simulation'); xlabel('x [m]'); ylabel('y [m]'); zlabel('z [m]');
 % refPlot = plotTrajectory(ax, ref.t, ref.x.pos, '.', 'Reference trajectory');
-refPlot = plotTrajectory(ax, ref.t, ref.x.pos, '.', 'Reference trajectory');
-solPlot = plotTrajectory(ax, sol.t, sol.x.pos, '.', 'Simulated trajectory');
+% refPlot = plotTrajectory(ax, ref_pos.t.pos, ref_pos.x.pos, '.', 'Reference trajectory');
+solPlot = plotTrajectory(ax, sol.t.ang, sol.x.pos, '.', 'Simulated trajectory');
 legend();
 simulateDrone(ax, sol, par);
 

@@ -1,18 +1,18 @@
-function [u_opt] = attitudeOutputControl(LTI, par, x0, yref)
+function [u_opt] = attitudeOutputControl(LTI_rot, par, x0, yref)
 %% Stability analysis
-controllability(LTI)
-observability(LTI)
+controllability(LTI_rot)
+observability(LTI_rot)
 
 %% Offset-free MPC with output feedback
 % In case the states are not known and considering disturbances
 dim = par.angCtrl.dim;
-simTime = par.angCtrl.simTime;
+simTime = 15;
 
-% LTI = struct();
-% LTI.A = LTI_rot.A;
-% LTI.B = LTI_rot.B;
-% LTI.C = LTI_rot.C;
-% LTI.D = LTI_rot.D;
+LTI = struct();
+LTI.A = LTI_rot.A;
+LTI.B = LTI_rot.B;
+LTI.C = LTI_rot.C;
+LTI.D = LTI_rot.D;
 LTI.Cd=[0.3,0,0;0,0.1,0;0,0,0.2;0,0,0;0,2,0;0.2,0.3,0];
 
 LTI.Bd=[2,0.1,0;0,0.4,0.7;0,0,0;0,0.3,0;0.1,0,0;0,0,0.8];
@@ -56,17 +56,17 @@ disp(['Rank of augmented dynamics = ', num2str(rank_aug), ', rank of system = ',
 [T,S]=predmodgen_output(LTI_e,dime);
 
 % Constraint setup
-a_lim = par.cstr.maxAcc*ones(N-1,1);
-x_lim = par.cstr.maxAng;
-
-F = zeros(N-1,N*par.angCtrl.dim.u);
-for i = 1:(N-1)
-   F(i, (i-1)*nu + 1) = -1;
-   F(i, i*nu + 1) = 1;
-end
+% a_lim = par.cstr.maxAcc*ones(N-1,1);
+% x_lim = par.cstr.maxAng;
+% 
+% F = zeros(N-1,N*par.angCtrl.dim.u);
+% for i = 1:(N-1)
+%    F(i, (i-1)*nu + 1) = -1;
+%    F(i, i*nu + 1) = 1;
+% end
 
 Qbar=blkdiag(kron(eye(dime.N),Q_e),P_e);
-Rbar=kron(eye(dim.N),R_e);
+Rbar=kron(eye(dime.N),R_e);
 H_e=S'*Qbar*S+Rbar;
 hx0=S'*Qbar*T;
 hxref=-S'*Qbar*kron(ones(dime.N+1,1),eye(dime.x));
@@ -82,7 +82,7 @@ u_r = zeros(dime.u, simTime);
 d_hat = zeros(dime.d, simTime);
 
 x_e(:,1)=LTI_e.x0; 
-x_e_hat(:,1)=[0; 90; 0; 0; 0; 0; 0; 2; 0]; %TODO
+x_e_hat(:,1)=[0; 10; 0; 0; 0; 0; 0; 2; 0];
 y(:,1)=LTI_e.C*LTI_e.x0;
 
 for k=1:simTime
@@ -96,11 +96,9 @@ for k=1:simTime
     H_OTS=blkdiag(zeros(dim.x),eye(dim.u));
     h_OTS=zeros(dim.x+dim.u,1);
     
-    quadprog(H,f,A,b) minimizes 1/2*x'*H*x + f'*x subject to the restrictions A*x ? b.
-    
     cvx_begin quiet
-        variable x_r_u_r(dime.x+dime.u)
-        minimize (1/2*x_r_u_r'*H_OTS*x + h_OTS'*x_r_u_r)
+        variable x_r_u_r(dim.x+dim.u)
+        minimize (1/2*x_r_u_r'*H_OTS*x_r_u_r + h_OTS'*x_r_u_r)
         subject to
         A_OTS * x_r_u_r <= b_OTS;
     cvx_end
@@ -113,9 +111,9 @@ for k=1:simTime
     cvx_begin quiet
         variable u_N(dim.u*dim.N)
         minimize ( (1/2)*quad_form(u_N,H_e) + (h_e*[x_e_0; x_r_e; u_r])'*u_N )
-%         subject to
-%         % input contraints
-%         par.angCtrl.F*u_N <= par.angCtrl.f
+        subject to
+        % input contraints
+        par.angCtrl.F*u_N <= par.angCtrl.f;
 %         F * u_N <= a_lim
 %         % state constraints
 %         S*u_N <= -T*att + x_lim;

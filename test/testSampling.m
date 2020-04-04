@@ -34,8 +34,8 @@ run parameters
 
 par.sim.tmax = 20;
 
-path = @(t) [0*t; 0*t; t]; % Fly straight up
-% path = @(t) [4*cos(t); 4*sin(t); t/3]; %Ellipsoidal spiral
+% path = @(t) [0*t; 0*t; t]; % Fly straight up
+path = @(t) [4*cos(t); 4*sin(t); t/3]; %Ellipsoidal spiral
 
 sol = struct();
 sol.t.pos = (0:par.sim.h:par.sim.tmax);
@@ -55,14 +55,14 @@ frame = par.posCtrl.sampleInt/par.angCtrl.sampleInt;
 
 sol.x.ang(:,1:frame) = ref_ang.x.ang(:,1:frame);
 % sol.x.ang = ref.x.ang;
-% sol.u.pos = ref_pos.u.pos;
+% sol.u.ang = ref.u.ang;
 sol.x.pos = ref_pos.x.pos;
-ang = ref_ang.x.ang(:,1);
+% sol.u.pos = ref_pos.u.pos;
 
 predictionBuffer = ceil(par.angCtrl.dim.N*par.angCtrl.predInt/par.sim.h);
 
 % i=2:(nsteps_pos-predictionBuffer)
-for i=2:(nsteps_pos -predictionBuffer)
+for i=2:(nsteps_pos-predictionBuffer)
     sol.u.pos(:,i) = positionMPC(sol.x.ang(:,frame*(i-2)+10), ...
                                  sol.x.pos(:,i-1), ...
                                  sol.t.pos(i), ...
@@ -72,22 +72,28 @@ for i=2:(nsteps_pos -predictionBuffer)
     temp_x(:,1) = sol.x.ang(:,frame*(i-1));
     for j=2:frame+1
         disp([num2str(i), ', ' num2str(j)]);
-        temp_u(:,j) = attitudeMPC(ref_ang, par, sol.t.ang(frame*(j-1)+j), temp_x(:,j-1), [],[]);
-        omega = -temp_u(3,j)/par.drone.rotor.Km;
-    %     omega = [-1 1 -1 1]*par.drone.u2omega*[sol.u.pos(1,i) sol.u.ang(:,i)']';
-    %     sol.x.ang(:,i) = [zeros(3,1); sol.u.pos(2:3,i); ref.x.ang(6,i)];
-        temp_x(:,j) = rotationalDynamics([zeros(2,1); temp_x(3:6,j-1)], [temp_u(:,j); omega] , par);
-    %     sol.x.ang(:,i) = rotationalDynamics(sol.x.ang(:,1), [sol.u.ang(:,i); omega] , par);
+        % output MPC
+%         temp_u(:,j) = attitudeMPC([], par, sol.t.ang(frame*(i-2)+j), [],...
+%                                 ref_ang.x.ang(:,1),...
+%                                 ref_ang.x.ang(:,frame*(i-2)+j-1)); % Output MPC
+        % regular MPC
+        temp_u(:,j) = attitudeMPC(ref_ang, par, sol.t.ang(frame*(i-2)+j), temp_x(:,j-1), [],[]);
+        g = @(x) rotationalDynamics(x, [sol.u.pos(1,i); temp_u(:,j)] , par);
+        temp_x(:,j) = GL4(g, temp_x(:,j-1), par);
     end
     sol.u.ang(:,frame*(i-2)+2:frame*(i-2)+11) = temp_u(:,2:frame+1);
     sol.x.ang(:,frame*(i-1)+1:frame*(i-1)+10) = temp_x(:,2:frame+1);    
 end
+sol.x.pos = repelem(sol.x.pos,1,10);
+sol.x.pos = sol.x.pos(:,1:nsteps_ang);
+sol.u.pos = repelem(sol.u.pos,1,10);
+sol.u.pos = sol.u.pos(:,1:nsteps_ang);
 
 close all;
 figure; ax = gca; axis equal; grid; grid minor; hold on;
 title('Quadcopter simulation'); xlabel('x [m]'); ylabel('y [m]'); zlabel('z [m]');
 % refPlot = plotTrajectory(ax, ref.t, ref.x.pos, '.', 'Reference trajectory');
 % refPlot = plotTrajectory(ax, ref.t, ref.x.pos, '.', 'Reference trajectory');
-solPlot = plotTrajectory(ax, sol.t.pos, sol.x.pos, '.', 'Simulated trajectory');
+solPlot = plotTrajectory(ax, sol.t.ang, sol.x.pos, '.', 'Simulated trajectory');
 legend();
-simulateDrone(ax, sol, par);
+% simulateDrone(ax, sol, par);

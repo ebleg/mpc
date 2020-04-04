@@ -12,7 +12,7 @@ controllability(LTI)
 
 %% Regular MPC    
 %     att = sol.x.ang(:,1);
-%     LTI = LTI_rot_d;
+%     LTI = par.angCtrl.LTI;
 N = par.angCtrl.dim.N;
     
 % prediction matrix

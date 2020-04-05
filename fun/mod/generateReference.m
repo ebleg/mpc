@@ -34,13 +34,14 @@ function [ref] = generateReference(t, path, par)
     ref.u.pos = zeros(par.posCtrl.dim.u, nsteps);
     ref.x.ang(6,:) = psi;
     
+    tmp = [par.drone.m*par.env.g, 0, 0]';
     % Solve for steady-state reference values
     for i=1:nsteps
         f = @(u) ref.dx.pos(1:3, i) - ...
             accelerations(ref.x.pos(:,i), [u; ref.x.ang(6, i)], par);
-        u = fsolve(f, [par.drone.m*par.env.g, 0, 0]', par.settings.solve);
-        ref.u.pos(:,i) = u;
-        ref.x.ang(4:5,i) = u(2:3);
+        tmp = fsolve(f, tmp, par.settings.solve);
+        ref.u.pos(:,i) = tmp;
+        ref.x.ang(4:5,i) = tmp(2:3);
     end
     
     % Compute angular velocities and accelerations along the path
@@ -52,11 +53,12 @@ function [ref] = generateReference(t, path, par)
     ref.x.ang(1:3,:) = dang;
     ref.dx.ang = [ddang; dang];
     
+    tmp = [0 0 0]';
     for i=1:nsteps
         g = @(u234) ref.dx.ang(1:3,i) - ...
             angularAcc(ref.x.ang(1:3,i), [ref.u.pos(1,i); u234], par);
-        u = fsolve(g, [0 0 0]', par.settings.solve);
-        ref.u.ang(:,i) = u;
+        tmp = fsolve(g, tmp, par.settings.solve);
+        ref.u.ang(:,i) = tmp;
     end
     fprintf(' Done - '); toc;
 end

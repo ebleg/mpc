@@ -29,15 +29,15 @@ function [LTI_trans] = simpTranslationalDynamics(setpt, par)
              cos(phi0)*sin(psi0)*cos(theta0);
              -cos(phi0)*sin(theta0)];
 
-    fcn = @(e) translationalDynamics([0 0 0 phi0 theta0 psi0]', e, par);
-    Bj = jacobianest(fcn, setpt);
-    Bj = [Bj(1:3,1:par.posCtrl.dim.u); zeros(3)];
-    
+%     fcn = @(e) translationalDynamics([0 0 0 phi0 theta0 psi0]', e, par);
+%     Bj = jacobianest(fcn, setpt);
+%     Bj = [Bj(1:3,1:par.posCtrl.dim.u); zeros(3)];
+%     
     B = [bT, bphi, btheta;
          zeros(par.posCtrl.dim.u)];
-    if ~all(B == Bj)
-       error('Matrix mismatch')
-    end
+%     if ~all(B == Bj)
+%        error('Matrix mismatch')
+%     end
     C = eye(par.posCtrl.dim.y); % Assume full state feedback (for now)
     D = zeros(par.posCtrl.dim.y, par.posCtrl.dim.u);
     

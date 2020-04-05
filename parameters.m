@@ -14,7 +14,7 @@
 par = struct();
 
 %% Simulation parameters
-par.sim.tmax = 4;
+par.sim.tmax = 10;
 par.sim.h = 0.02; % ODE integration timestep
 
 %% Quadcopter properties
@@ -71,14 +71,17 @@ par.posCtrl.dim.y = 6; % Assume full-state knowledge for now
 par.posCtrl.dim.N = 5; % Prediction horizon
 
 % Cost matrices
-par.posCtrl.Q = eye(par.posCtrl.dim.x)*diag([1 1 1 25 25 25]);
-par.posCtrl.R = eye(par.posCtrl.dim.u)*diag([.1 1. 1.]);
-par.posCtrl.P = eye(par.posCtrl.dim.x)*diag([1 1 1 200 200 200]); % Might be overwritten by DARE solution
+par.posCtrl.Q = diag([1 1 1 25 25 25]);
+par.posCtrl.R = diag([.05 1. 1.]);
+par.posCtrl.P = diag([1 1 1 50 50 50]); % Might be overwritten by DARE solution
 
 % Sample rate
 par.posCtrl.sampleInt = 6*par.sim.h;   % Position MPC sample rate
 par.posCtrl.predInt = 6*par.sim.h;      % Position MPC prediction interval
 [par.posCtrl.T, par.posCtrl.f] = posCstrMatrix(par);
+
+% Terminal set
+par.posCtrl.Xf = 0.5*ones(1,par.posCtrl.dim.x)*par.posCtrl.P*ones(par.posCtrl.dim.x,1);
 
 %% Attitude control parameters
 % Problem dimensions

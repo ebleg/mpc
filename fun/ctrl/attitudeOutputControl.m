@@ -92,8 +92,8 @@ for k=1:par.sim.h:par.sim.tmax+1
     A_OTS = [eye(dim.x)-LTI.A LTI.B ;LTI.C zeros(dim.x, dim.u)];
     b_OTS = [LTI.Bd*d_hat(:,k); LTI.yref-LTI.Cd*d_hat(:,k)];
     
-    H_OTS=blkdiag(zeros(dim.x),eye(dim.u));
-    h_OTS=zeros(dim.x+dim.u,1);
+    H_OTS = blkdiag(zeros(dim.x),eye(dim.u));
+    h_OTS = zeros(dim.x+dim.u,1);
     
     cvx_begin quiet
         variable x_r_u_r(dim.x+dim.u)
@@ -102,6 +102,7 @@ for k=1:par.sim.h:par.sim.tmax+1
         A_OTS * x_r_u_r <= b_OTS;
     cvx_end
 %     x_r_u_r=quadprog(H_OTS,h_OTS,[],[],A_OTS, b_OTS,[],[],[],par.settings.opts);
+
     x_r = x_r_u_r(1:dim.x);
     u_r = x_r_u_r(dim.x+1:end);
     

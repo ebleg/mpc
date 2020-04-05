@@ -16,6 +16,7 @@ addpath('fun');
 addpath('fun/mod');
 addpath('fun/ctrl');
 addpath('fun/vis');
+addpath('fun/stability');
 
 run parameters
 run header
@@ -65,6 +66,11 @@ ref_ang = generateReference(sol.t.ang, path, par);
 frame = par.posCtrl.sampleInt/par.angCtrl.sampleInt;
 sol.x.pos(:,1) = ref_pos.x.pos(:,1);%+ [0 0 0 0.2 0 0.2]';
 sol.x.ang(:,1:frame) = ref_ang.x.ang(:,1:frame);
+sol.x.pos(:,1) = ref.x.pos(:,1);%+ [0 0 0 0.2 0 0.2]';
+sol.x.ang(:,1) = ref.x.ang(:,1);
+
+predictionBuffer = ceil(par.posCtrl.dim.N*par.posCtrl.predInt/par.sim.h);
+wdw = waitbar(0.02, sprintf('Simulation progress (%d)', 0.02*100));
 
 predictionBufferPos = ceil(par.posCtrl.dim.N*par.posCtrl.predInt/par.sim.h);
 predictionBufferAng = ceil(par.angCtrl.dim.N*par.angCtrl.predInt/par.sim.h);
@@ -96,7 +102,8 @@ for i=2:50
     f = @(x) translationalDynamics(x, [sol.u.pos(:,i); sol.x.ang(6,frame*i)] , par);
     sol.x.pos(:,i) = GL4(f, sol.x.pos(:,i-1), par);
 end
-fprintf('Simulation ended - '); toc;
+fprintf('Done - '); toc;
+delete(wdw);
 
 %% Visualisation
 sol.x.pos = repelem(sol.x.pos,1,10);

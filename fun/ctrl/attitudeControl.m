@@ -22,10 +22,10 @@ N = par.angCtrl.dim.N;
 Qbar = blkdiag(kron(eye(N), par.angCtrl.Q), par.angCtrl.P);
 Rbar = kron(eye(N), par.angCtrl.R);
 
-xref = xref(1:(N+1)*par.angCtrl.dim.x)';
+err = att - xref; 
 
 H = S'*Qbar*S + Rbar;
-h = att'*T'*Qbar*S - xref'*Qbar*S;
+h = err'*T'*Qbar*S;
 
 % Optimization
 cvx_begin quiet

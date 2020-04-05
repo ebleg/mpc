@@ -73,6 +73,8 @@ predictionBufferAng = ceil(par.angCtrl.dim.N*par.angCtrl.predInt/par.sim.h);
 predictionBuffer = max(predictionBufferPos, predictionBufferAng);
 %% Simulation loop
 fprintf('Starting simulation loop...\n'); tic;
+
+
 % i=2:(nsteps-predictionBuffer)
 for i=2:50
     sol.u.pos(:,i) = positionMPC(sol.x.ang(:,i-1), ...

@@ -15,7 +15,7 @@ function [ref] = generateReference(t, path, par)
     % For the reference yaw, it is assumed the drone always wants to be
     % aligned with the tangent of the reference path
     dr = diff(r, 1, 2)/par.sim.h;
-    psi = [atan2(dr(1,:), dr(2,:)), 0]; % dimensions consistent, same reference for last and one-but-last state is acceptable
+    psi = wrapToPi([atan2(dr(2,:), dr(1,:)), 0]); % dimensions consistent, same reference for last and one-but-last state is acceptable
     psi(end) = psi(end-1);
     
     % Compute linear velocities and accelerations along the path

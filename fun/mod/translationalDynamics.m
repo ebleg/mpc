@@ -4,7 +4,7 @@ function [dx_pos] = translationalDynamics(x_pos, u_pos, par)
     forcing = [0 0 u_pos(1)]'; % Total thrust
     gravity = [0 0 -par.drone.m*par.env.g]';
    
-    R = eul2rotm(u_pos(2:4)', 'XYZ');
+    R = eul2rotm(u_pos(4:-1:2)', 'ZYX');
     
     dx_pos = [1/par.drone.m*(gravity + R*forcing); 
               linearSpeeds];

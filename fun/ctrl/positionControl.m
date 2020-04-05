@@ -26,10 +26,11 @@ function [u] = positionControl(LTI_pos, pos, xref, par)
     %% Solve optimization problem
     cvx_begin quiet
         variable u_N(par.posCtrl.dim.u*par.posCtrl.dim.N)
-        minimize ( quad_form(u_N, H) + 2*h*u_N );
+        minimize(quad_form(u_N, H) + 2*h*u_N);
 
         % Input constraints
         par.posCtrl.T*u_N <= par.posCtrl.f;
+        % Terminal set
     cvx_end
     
     u = u_N(1:par.posCtrl.dim.u);

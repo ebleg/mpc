@@ -14,27 +14,30 @@ function [LTI_trans] = simpTranslationalDynamics(setpt, par)
     A = [zeros(3, 6); eye(3) zeros(3)]; 
     
     % Columns of input matrix
-%     bT = -1/par.drone.m*...
-%         [sin(phi0)*sin(psi0) + cos(phi0)*cos(psi0)*sin(theta0);
-%          cos(phi0)*sin(psi0)*sin(theta0) - cos(psi0)*sin(phi0);
-%          cos(phi0)*cos(theta0)];
-%      
-%     bphi = -T0/par.drone.m*...
-%            [cos(phi0)*sin(psi0) - sin(phi0)*cos(psi0)*sin(theta0);
-%             -sin(phi0)*sin(psi0)*sin(theta0) - cos(psi0)*cos(phi0);
-%             -sin(phi0)*cos(theta0)];
-%     
-%     btheta = -T0/par.drone.m*...
-%              [cos(phi0)*cos(psi0)*cos(theta0);
-%              cos(phi0)*sin(psi0)*cos(theta0);
-%              -cos(phi0)*sin(theta0)];
-
-    fcn = @(e) translationalDynamics([0 0 0 0 0 0]', e, par);
-    B = jacobianest(fcn, setpt);
-    B = [B(1:3,1:par.posCtrl.dim.u); zeros(3)];
+    bT = 1/par.drone.m*...
+        [sin(phi0)*sin(psi0) + cos(phi0)*cos(psi0)*sin(theta0);
+         cos(phi0)*sin(psi0)*sin(theta0) - cos(psi0)*sin(phi0);
+         cos(phi0)*cos(theta0)];
+     
+    bphi = T0/par.drone.m*...
+           [cos(phi0)*sin(psi0) - sin(phi0)*cos(psi0)*sin(theta0);
+            -sin(phi0)*sin(psi0)*sin(theta0) - cos(psi0)*cos(phi0);
+            -sin(phi0)*cos(theta0)];
     
-%     B = [bT, bphi, btheta;
-%          zeros(par.posCtrl.dim.u)];
+    btheta = T0/par.drone.m*...
+             [cos(phi0)*cos(psi0)*cos(theta0);
+             cos(phi0)*sin(psi0)*cos(theta0);
+             -cos(phi0)*sin(theta0)];
+
+    fcn = @(e) translationalDynamics([0 0 0 phi0 theta0 psi0]', e, par);
+    Bj = jacobianest(fcn, setpt);
+    Bj = [Bj(1:3,1:par.posCtrl.dim.u); zeros(3)];
+    
+    B = [bT, bphi, btheta;
+         zeros(par.posCtrl.dim.u)];
+    if ~all(B == Bj)
+       error('Matrix mismatch')
+    end
     C = eye(par.posCtrl.dim.y); % Assume full state feedback (for now)
     D = zeros(par.posCtrl.dim.y, par.posCtrl.dim.u);
     

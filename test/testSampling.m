@@ -62,7 +62,7 @@ sol.x.pos = ref_pos.x.pos;
 predictionBuffer = ceil(par.angCtrl.dim.N*par.angCtrl.predInt/par.sim.h);
 
 % i=2:(nsteps_pos-predictionBuffer)
-for i=2:(nsteps_pos-predictionBuffer)
+for i=2:50
     sol.u.pos(:,i) = positionMPC(sol.x.ang(:,frame*(i-2)+10), ...
                                  sol.x.pos(:,i-1), ...
                                  sol.t.pos(i), ...
@@ -72,12 +72,7 @@ for i=2:(nsteps_pos-predictionBuffer)
     temp_x(:,1) = sol.x.ang(:,frame*(i-1));
     for j=2:frame+1
         disp([num2str(i), ', ' num2str(j)]);
-        % output MPC
-%         temp_u(:,j) = attitudeMPC([], par, sol.t.ang(frame*(i-2)+j), [],...
-%                                 ref_ang.x.ang(:,1),...
-%                                 ref_ang.x.ang(:,frame*(i-2)+j-1)); % Output MPC
-        % regular MPC
-        temp_u(:,j) = attitudeMPC(ref_ang, par, sol.t.ang(frame*(i-2)+j), temp_x(:,j-1), [],[]);
+        temp_u(:,j) = attitudeMPC(ref_ang, par, sol.t.ang(frame*(i-2)+j), temp_x(:,j-1), [],[],[]);
         g = @(x) rotationalDynamics(x, [sol.u.pos(1,i); temp_u(:,j)] , par);
         temp_x(:,j) = GL4(g, temp_x(:,j-1), par);
     end

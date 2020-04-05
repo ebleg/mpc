@@ -96,9 +96,8 @@ par.angCtrl.P = eye(par.angCtrl.dim.x)*diag([1 1 1 20 20 20]); % Might be overwr
 [par.angCtrl.F, par.angCtrl.f] = attCstrMatrix(par);
 
 % Sample rate
-par.angCtrl.sampleInt = 0.002;   % Position MPC sample rate; should be at least 10 times smaller than the sample rate for the position control and a divisor of the sample rate for the position control
-par.angCtrl.predInt = 0.02;      % Position MPC prediction interval
-
+par.angCtrl.sampleInt = par.posCtrl.sampleInt/10;   % Position MPC sample rate; should be at least 10 times smaller than the sample rate for the position control and a divisor of the sample rate for the position control
+par.angCtrl.predInt = par.angCtrl.sampleInt;      % Position MPC prediction interval
 
 % System
 par.angCtrl.LTI = c2d(simpRotationalDynamics(par, [0 0 0 0 0 0]), par.angCtrl.sampleInt, 'zoh'); % Linear system around hover

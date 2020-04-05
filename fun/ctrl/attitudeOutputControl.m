@@ -6,7 +6,6 @@ observability(LTI_rot)
 %% Offset-free MPC with output feedback
 % In case the states are not known and considering disturbances
 dim = par.angCtrl.dim;
-simTime = 15;
 
 LTI = struct();
 LTI.A = LTI_rot.A;
@@ -85,7 +84,7 @@ x_e(:,1)=LTI_e.x0;
 x_e_hat(:,1)=[0; 10; 0; 0; 0; 0; 0; 2; 0];
 y(:,1)=LTI_e.C*LTI_e.x0;
 
-for k=1:simTime
+for k=1:par.sim.h:par.sim.tmax+1
     
     x_e_0=x_e(:,k);
     d_hat(:,k)=x_e_hat(end-dime.d+1:end,k);

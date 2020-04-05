@@ -59,12 +59,11 @@ sol.u.pos = nan(par.posCtrl.dim.u, nsteps_pos);
 sol.u.ang = nan(par.angCtrl.dim.u, nsteps_ang);
 
 %% Path & reference states
-ref_pos = generateReference(sol.t.pos, path, par);
-ref_ang = generateReference(sol.t.ang, path, par);
+ref = generateReference(sol.t.pos, path, par);
 
 %% Set initial conditions
 frame = par.posCtrl.sampleInt/par.angCtrl.sampleInt;
-sol.x.pos(:,1) = ref_pos.x.pos(:,1);%+ [0 0 0 0.2 0 0.2]';
+sol.x.pos(:,1) = ref.x.pos(:,1);%+ [0 0 0 0.2 0 0.2]';
 sol.x.ang(:,1:frame) = ref_ang.x.ang(:,1:frame);
 sol.x.pos(:,1) = ref.x.pos(:,1);%+ [0 0 0 0.2 0 0.2]';
 sol.x.ang(:,1) = ref.x.ang(:,1);
@@ -77,31 +76,34 @@ predictionBufferAng = ceil(par.angCtrl.dim.N*par.angCtrl.predInt/par.sim.h);
 predictionBuffer = max(predictionBufferPos, predictionBufferAng);
 %% Simulation loop
 fprintf('Starting simulation loop...\n'); tic;
+
+
 % i=2:(nsteps-predictionBuffer)
-for i=2:50
-    sol.u.pos(:,i) = positionMPC(sol.x.ang(:,frame*(i-2)+10), ...
-                                 sol.x.pos(:,i-1), ...
-                                 sol.t.pos(i), ...
-                                 ref_pos, par);
-    temp_u = nan(par.angCtrl.dim.u,frame+1);
-    temp_x = nan(par.angCtrl.dim.x,frame+1);
-    temp_x(:,1) = sol.x.ang(:,frame*(i-1));
-    for j=2:frame+1
-        disp([num2str(i), ', ' num2str(j)]);
-        % output MPC
-%         temp_u(:,j) = attitudeMPC([], par, sol.t.ang(frame*(i-2)+j), [],...
-%                                 ref_ang.x.ang(:,1),...
-%                                 ref_ang.x.ang(:,frame*(i-2)+j-1)); % Output MPC
-        % regular MPC
-        temp_u(:,j) = attitudeMPC(ref_ang, par, sol.t.ang(frame*(i-2)+j), temp_x(:,j-1), [],[]);
-        g = @(x) rotationalDynamics(x, [sol.u.pos(1,i); temp_u(:,j)] , par);
-        temp_x(:,j) = GL4(g, temp_x(:,j-1), par);
-    end
-    sol.u.ang(:,frame*(i-2)+2:frame*(i-2)+11) = temp_u(:,2:frame+1);
-    sol.x.ang(:,frame*(i-1)+1:frame*(i-1)+10) = temp_x(:,2:frame+1); 
-    f = @(x) translationalDynamics(x, [sol.u.pos(:,i); sol.x.ang(6,frame*i)] , par);
-    sol.x.pos(:,i) = GL4(f, sol.x.pos(:,i-1), par);
-end
+% for i=2:50
+%     sol.u.pos(:,i) = positionMPC(sol.x.ang(:,frame*(i-2)+10), ...
+%                                  sol.x.pos(:,i-1), ...
+%                                  sol.t.pos(i), ...
+%                                  ref, par);
+%     temp_u = nan(par.angCtrl.dim.u, frame+1);
+%     temp_x = nan(par.angCtrl.dim.x, frame+1);
+%     temp_x(:,1) = sol.x.ang(:,frame*(i-1));
+%     for j=2:frame+1
+%         disp([num2str(i), ', ' num2str(j)]);
+%         % output MPC
+% %         temp_u(:,j) = attitudeMPC([], par, sol.t.ang(frame*(i-2)+j), [],...
+% %                                 ref_ang.x.ang(:,1),...
+% %                                 ref_ang.x.ang(:,frame*(i-2)+j-1)); % Output MPC
+%         % regular MPC
+%         temp_u(:,j) = attitudeMPC(ref, par, sol.t.ang(frame*(i-2)+j), temp_x(:,j-1), [],[]);
+%         g = @(x) rotationalDynamics(x, [sol.u.pos(1,i); temp_u(:,j)] , par);
+%         temp_x(:,j) = GL4(g, temp_x(:,j-1), par);
+%     end
+%     sol.u.ang(:,frame*(i-2)+2:frame*(i-2)+11) = temp_u(:,2:frame+1);
+%     sol.x.ang(:,frame*(i-1)+1:frame*(i-1)+10) = temp_x(:,2:frame+1); 
+%     f = @(x) translationalDynamics(x, [sol.u.pos(:,i); sol.x.ang(6,frame*i)] , par);
+%     sol.x.pos(:,i) = GL4(f, sol.x.pos(:,i-1), par);
+% end
+
 fprintf('Done - '); toc;
 delete(wdw);
 

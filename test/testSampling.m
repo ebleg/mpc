@@ -37,58 +37,57 @@ par.sim.tmax = 20;
 % path = @(t) [0*t; 0*t; t]; % Fly straight up
 path = @(t) [4*cos(t); 4*sin(t); t/3]; %Ellipsoidal spiral
 
-frame = 10;
+frame = par.posCtrl.predInt/par.angCtrl.predInt;
 sol = struct();
-sol.t.pos = (0:par.sim.h:par.sim.tmax);
-sol.t.ang = (0:par.sim.h/frame:par.sim.tmax);
-nsteps_pos = numel(sol.t.pos);
-nsteps_ang = numel(sol.t.ang);
+sol.t = (0:par.sim.h:par.sim.tmax);
+nsteps = numel(sol.t);
 
-sol.x.pos = nan(par.posCtrl.dim.x, nsteps_pos);
-sol.x.ang = nan(par.angCtrl.dim.x, nsteps_ang);
-sol.u.pos = nan(par.posCtrl.dim.u, nsteps_pos);
-sol.u.ang = nan(par.angCtrl.dim.u, nsteps_ang);
+sol.x.pos = nan(par.posCtrl.dim.x, nsteps);
+sol.x.ang = nan(par.angCtrl.dim.x, frame*nsteps);
+sol.u.pos = nan(par.posCtrl.dim.u, nsteps);
+sol.u.ang = nan(par.angCtrl.dim.u, frame*nsteps);
 
-ref_pos = generateReference(sol.t.pos, path, par);
-ref_ang = generateReference(sol.t.ang, path, par);
+ref = generateReference(sol.t, path, par);
 
-sol.x.ang(:,1:frame) = ref_ang.x.ang(:,1:frame);
+sol.x.ang(:,1:frame) = repelem(ref.x.ang(:,1),1,frame);
 % sol.x.ang = ref.x.ang;
 % sol.u.ang = ref.u.ang;
-sol.x.pos = ref_pos.x.pos;
+sol.x.pos = ref.x.pos;
 % sol.u.pos = ref_pos.u.pos;
-xref = ref_ang.x.ang;
+xref = repelem(ref.x.ang,1,frame);
 
+% xref = [sol.u.pos(2:3,:); ref.x.ang(3:6,:)];
 predictionBuffer = ceil(par.angCtrl.dim.N*par.angCtrl.predInt/par.sim.h);
 
 % i=2:(nsteps_pos-predictionBuffer)
-for i=2:50
-    sol.u.pos(:,i) = positionMPC(sol.x.ang(:,frame*(i-2)+10), ...
-                                 sol.x.pos(:,i-1), ...
-                                 sol.t.pos(i), ...
-                                 ref_pos, par);
+for i=2:5
+    sol.u.pos(:,i) = ref.u.pos(:,i);
+%     sol.u.pos(:,i) = positionMPC(sol.x.ang(:,frame*(i-2)+10), ...
+%                                  sol.x.pos(:,i-1), ...
+%                                  sol.t.pos(i), ...
+%                                  ref_pos, par);
     temp_u = nan(par.angCtrl.dim.u,frame+1);
     temp_x = nan(par.angCtrl.dim.x,frame+1);
     temp_x(:,1) = sol.x.ang(:,frame*(i-1));
     for j=2:frame+1
         disp([num2str(i), ', ' num2str(j)]);
-        temp_u(:,j) = attitudeMPC(xref(:,frame*(i-2)+j:end), par, sol.t.ang(frame*(i-2)+j), temp_x(:,j-1), [],[],[]);
+        % sol.t.ang(frame*(i-2)+j)
+        temp_u(:,j) = attitudeMPC(xref(:,frame*(i-2)+j:end), par, 1, temp_x(:,j-1));
         g = @(x) rotationalDynamics(x, [sol.u.pos(1,i); temp_u(:,j)] , par);
         temp_x(:,j) = GL4(g, temp_x(:,j-1), par);
     end
     sol.u.ang(:,frame*(i-2)+2:frame*(i-2)+11) = temp_u(:,2:frame+1);
     sol.x.ang(:,frame*(i-1)+1:frame*(i-1)+10) = temp_x(:,2:frame+1);    
 end
-sol.x.pos = repelem(sol.x.pos,1,10);
-sol.x.pos = sol.x.pos(:,1:nsteps_ang);
-sol.u.pos = repelem(sol.u.pos,1,10);
-sol.u.pos = sol.u.pos(:,1:nsteps_ang);
+sol.x.pos = repelem(sol.x.pos,1,frame);
+sol.u.pos = repelem(sol.u.pos,1,frame);
+sol.t = repelem(sol.t,1,frame);
 
 close all;
 figure; ax = gca; axis equal; grid; grid minor; hold on;
 title('Quadcopter simulation'); xlabel('x [m]'); ylabel('y [m]'); zlabel('z [m]');
 % refPlot = plotTrajectory(ax, ref.t, ref.x.pos, '.', 'Reference trajectory');
 % refPlot = plotTrajectory(ax, ref.t, ref.x.pos, '.', 'Reference trajectory');
-solPlot = plotTrajectory(ax, sol.t.ang, sol.x.pos, '.', 'Simulated trajectory');
+solPlot = plotTrajectory(ax, sol.t, sol.x.pos, '.', 'Simulated trajectory');
 legend();
 % simulateDrone(ax, sol, par);

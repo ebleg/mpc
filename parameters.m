@@ -61,8 +61,6 @@ par.cstr.maxVel = 285; % [rad/s], Include 85% SF margin to reduce wear on the ge
 % 0.08 = Pel,max*eff/omega_max, 0.039 = k_T*omega_max^2
 par.cstr.maxAcc = (0.08 - 0.039)/par.drone.rotor.I*0.85; % Seems reasonable
 
-par.cstr.maxAng = 0.5; %rad
-
 %% Position control parameters
 % Problem dimensions
 par.posCtrl.dim.u = 3; % Input vector length

@@ -58,7 +58,7 @@ xref = [sol.u.pos(2:3,:); ref.x.ang(3:6,:)];
 predictionBuffer = ceil(par.angCtrl.dim.N*par.angCtrl.predInt/par.sim.h);
 
 % i=2:(nsteps-predictionBuffer)
-for i=2:50
+for i=2:250
     disp(num2str(i));
     sol.u.ang(:,i) = attitudeMPC(xref(:,i:end), par, sol.t(i), sol.x.ang(:,i-1), [],[]);
     g = @(x) rotationalDynamics(x, [sol.u.pos(1,i); sol.u.ang(:,i)] , par);
@@ -73,10 +73,3 @@ title('Quadcopter simulation'); xlabel('x [m]'); ylabel('y [m]'); zlabel('z [m]'
 solPlot = plotTrajectory(ax, sol.t, sol.x.pos, '.', 'Simulated trajectory');
 legend();
 % simulateDrone(ax, sol, par);
-
-%     omega = -sol.u.ang(3,i)/par.drone.rotor.Km
-%     sol.x.ang(:,i) = rotationalDynamics([sol.u.pos(2:3,i); ref.x.ang(3,i-1); sol.x.ang(4:6,i-1)], [sol.u.pos(1,i); sol.u.ang(:,i)] , par);
-%     sol.x.ang(:,i) = rotationalDynamics(sol.x.ang(:,i-1),...
-%                                         [sol.u.pos(1,i); sol.u.ang(:,i)] , par);
-%     sol.x.ang(:,i) = ref.x.ang(:,i);
-%     sol.x.ang(:,i) = [ref.x.ang(1:3,i); temp_x(4:6,i)];

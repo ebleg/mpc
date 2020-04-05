@@ -57,6 +57,7 @@ sol.x.ang(:,1:frame) = ref_ang.x.ang(:,1:frame);
 % sol.u.ang = ref.u.ang;
 sol.x.pos = ref_pos.x.pos;
 % sol.u.pos = ref_pos.u.pos;
+xref = ref_ang.x.ang;
 
 predictionBuffer = ceil(par.angCtrl.dim.N*par.angCtrl.predInt/par.sim.h);
 
@@ -71,7 +72,7 @@ for i=2:50
     temp_x(:,1) = sol.x.ang(:,frame*(i-1));
     for j=2:frame+1
         disp([num2str(i), ', ' num2str(j)]);
-        temp_u(:,j) = attitudeMPC(ref_ang, par, sol.t.ang(frame*(i-2)+j), temp_x(:,j-1), [],[],[]);
+        temp_u(:,j) = attitudeMPC(xref(:,frame*(i-2)+j:end), par, sol.t.ang(frame*(i-2)+j), temp_x(:,j-1), [],[],[]);
         g = @(x) rotationalDynamics(x, [sol.u.pos(1,i); temp_u(:,j)] , par);
         temp_x(:,j) = GL4(g, temp_x(:,j-1), par);
     end

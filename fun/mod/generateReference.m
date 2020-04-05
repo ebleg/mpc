@@ -17,6 +17,11 @@ function [ref] = generateReference(t, path, par)
     dr = diff(r, 1, 2)/par.sim.h;
     psi = wrapToPi([atan2(dr(2,:), dr(1,:)), 0]); % dimensions consistent, same reference for last and one-but-last state is acceptable
     psi(end) = psi(end-1);
+    for i=2:numel(psi)
+        if abs(psi(i) - psi(i-1)) > 6
+            psi(i:end) = psi(i:end) - sign(psi(i) - psi(i-1))*2*pi; 
+        end
+    end
     
     % Compute linear velocities and accelerations along the path
     ddr = diff(r, 2, 2)/par.sim.h/par.sim.h;

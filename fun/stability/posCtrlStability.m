@@ -1,6 +1,6 @@
 function rankChecks = posCtrlStability(par)
     fprintf('Stability of position MPC\n'); tic;
-
+    
     %% Controllability of the linearized system
     psiref = pi;
     n = par.posCtrl.dim.x;

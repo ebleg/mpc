@@ -31,7 +31,7 @@ run parameters
 %   pause(0.01);
 % end
 
-MPC = 0; %0 for regulation MPC, 1 for output MPC
+MPC = 1; %0 for regulation MPC, 1 for output MPC
 
 par.sim.tmax = 20;
 path = @(t) [0*t 0*t t]; % Fly straight up

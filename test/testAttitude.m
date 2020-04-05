@@ -53,7 +53,7 @@ sol.x.ang(:,1) = ref.x.ang(:,1);
 % sol.u.ang = ref.u.ang;
 sol.u.pos = ref.u.pos;
 sol.x.pos = ref.x.pos;
-xref = [sol.u.pos(2:3,:); ref.x.ang(3:6,:)];
+xref = [sol.u.pos(2:3,:); ref.x.ang(3:5,:); ];
 % xref = ref.x.ang;
 
 predictionBuffer = ceil(par.angCtrl.dim.N*par.angCtrl.predInt/par.sim.h);

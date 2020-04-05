@@ -16,6 +16,7 @@ if k*par.angCtrl.sampleInt <= t
     LTI_rot = par.angCtrl.LTI;
 %     LTI_rot = par.angCtrl.LTI;
     % Regular MPC
+    
     u_i = attitudeControl(LTI_rot, xref, par, att);
     % Output MPC
 %     u_i = attitudeOutputControl(LTI, LTI_e, par, x0, yref, dime); % Output MPC

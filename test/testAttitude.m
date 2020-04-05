@@ -26,15 +26,13 @@ sol.x.ang(:,1) = ref.x.ang(:,1);
 % sol.u.ang = ref.u.ang;
 sol.u.pos = ref.u.pos;
 sol.x.pos = ref.x.pos;
-xref = [sol.u.pos(2:3,:); ref.x.ang(3:6,:)];
-% xref = ref.x.ang;
 
 predictionBuffer = ceil(par.angCtrl.dim.N*par.angCtrl.predInt/par.sim.h);
 
 % i=2:(nsteps-predictionBuffer)
 for i=2:(nsteps-predictionBuffer)
     disp(num2str(i));
-    sol.u.ang(:,i) = attitudeMPC(xref(:,i:end), par, sol.t(i), sol.x.ang(:,i-1));
+    sol.u.ang(:,i) = attitudeMPC(ref.x.ang(:,i), par, sol.t(i), sol.x.ang(:,i-1));
     g = @(x) rotationalDynamics(x, [sol.u.pos(1,i); sol.u.ang(:,i)] , par);
     sol.x.ang(:,i) = RK4(g, sol.x.ang(:,i-1), par.sim.h);
 end

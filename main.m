@@ -14,6 +14,7 @@ addpath('fun');
 addpath('fun/mod');
 addpath('fun/ctrl');
 addpath('fun/vis');
+addpath('fun/stability');
 
 run parameters
 run header
@@ -57,6 +58,9 @@ sol.x.ang(:,1) = ref.x.ang(:,1);
 
 predictionBuffer = ceil(par.posCtrl.dim.N*par.posCtrl.predInt/par.sim.h);
 wdw = waitbar(0.02, sprintf('Simulation progress (%d)', 0.02*100));
+
+%% Stability checks
+posCtrlStability(par);
 
 %% Simulation loop
 fprintf('Starting simulation loop...'); tic;

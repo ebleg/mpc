@@ -37,9 +37,10 @@ par.sim.tmax = 20;
 % path = @(t) [0*t; 0*t; t]; % Fly straight up
 path = @(t) [4*cos(t); 4*sin(t); t/3]; %Ellipsoidal spiral
 
+frame = 10;
 sol = struct();
 sol.t.pos = (0:par.sim.h:par.sim.tmax);
-sol.t.ang = (0:par.sim.h*(par.angCtrl.sampleInt/par.posCtrl.sampleInt):par.sim.tmax);
+sol.t.ang = (0:par.sim.h/frame:par.sim.tmax);
 nsteps_pos = numel(sol.t.pos);
 nsteps_ang = numel(sol.t.ang);
 
@@ -50,8 +51,6 @@ sol.u.ang = nan(par.angCtrl.dim.u, nsteps_ang);
 
 ref_pos = generateReference(sol.t.pos, path, par);
 ref_ang = generateReference(sol.t.ang, path, par);
-
-frame = par.posCtrl.sampleInt/par.angCtrl.sampleInt;
 
 sol.x.ang(:,1:frame) = ref_ang.x.ang(:,1:frame);
 % sol.x.ang = ref.x.ang;

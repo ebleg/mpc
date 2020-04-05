@@ -15,11 +15,11 @@ end
 if k*par.posCtrl.sampleInt <= t
     LTI_rot = par.angCtrl.LTI;
     % Regular MPC
-%     xrefSampled = interp1(ref.t, ref.x.ang', t + (0:par.angCtrl.dim.N).*par.angCtrl.predInt)';
-%     u_i = attitudeControl(LTI_rot, xrefSampled, par, att);
+    xrefSampled = interp1(ref.t, ref.x.ang', t + (0:par.angCtrl.dim.N).*par.angCtrl.predInt)';
+    u_i = attitudeControl(LTI_rot, xrefSampled, par, att);
     % Output MPC
-    yrefSampled = interp1(ref.t, ref.x.ang', t + (0:par.angCtrl.dim.N).*par.angCtrl.predInt)';
-    u_i = attitudeOutputControl(LTI_rot, par, x0, yref, dime); % Output MPC
+%     yrefSampled = interp1(ref.t, ref.x.ang', t + (0:par.angCtrl.dim.N).*par.angCtrl.predInt)';
+%     u_i = attitudeOutputControl(LTI_rot, par, x0, yref, dime); % Output MPC
     k=k+1;
 end
 

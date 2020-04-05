@@ -64,10 +64,10 @@ wdw = waitbar(0.02, sprintf('Simulation progress (%d)', 0.02*100));
 %% Simulation loop
 fprintf('Starting simulation loop...'); tic;
 for i=2:(nsteps-predictionBuffer)
-    for j=1:par.posCtrl.sampleInt/par.angCtrl.sampleInt
-        MPC = 1; % 0 for regular MPC, 1 for output MPC
-        sol.u.ang(:,j) = attitudeMPC(MPC, ref, par, sol.x.ang(:,i-1), [], []);
-    end
+%     for j=1:par.posCtrl.sampleInt/par.angCtrl.sampleInt
+%         MPC = 1; % 0 for regular MPC, 1 for output MPC
+%         sol.u.ang(:,j) = attitudeMPC(MPC, ref, par, sol.x.ang(:,i-1), [], []);
+%     end
     sol.u.pos(:,i) = positionMPC(sol.x.ang(:,i-1), ...
                                  sol.x.pos(:,i-1), ...
                                  sol.t(i), ...

@@ -56,9 +56,10 @@ sol.x.pos(:,1) = ref.x.pos(:,1);%+ [0 0 0 0.2 0 0.2]';
 sol.x.ang(:,1) = ref.x.ang(:,1);
 
 predictionBuffer = ceil(par.posCtrl.dim.N*par.posCtrl.predInt/par.sim.h);
+wdw = waitbar(0.02, sprintf('Simulation progress (%d)', 0.02*100));
 
 %% Simulation loop
-fprintf('Starting simulation loop...\n'); tic;
+fprintf('Starting simulation loop...'); tic;
 for i=2:(nsteps-predictionBuffer)
 %     for j=1:par.posCtrl.sampleInt/par.angCtrl.sampleInt
 %         MPC = 0; % 0 for regular MPC, 1 for output MPC
@@ -70,9 +71,13 @@ for i=2:(nsteps-predictionBuffer)
                                  ref, par);
     sol.x.ang(:,i) = [zeros(3,1); sol.u.pos(2:3,i); ref.x.ang(6,i)];
     f = @(x) translationalDynamics(x, [sol.u.pos(:,i); ref.x.ang(6,i)] , par);
-    sol.x.pos(:,i) = GL4(f, sol.x.pos(:,i-1), par);
+    sol.x.pos(:,i) = RK4(f, sol.x.pos(:,i-1), par.sim.h);
+    waitbar(i/(nsteps-predictionBuffer), wdw, ...
+            sprintf('Simulation progress (%d%%)', ...
+            round(i/(nsteps-predictionBuffer)*100)));
 end
-fprintf('Simulation ended - '); toc;
+fprintf('Done - '); toc;
+delete(wdw);
 
 %% Visualisation
 close all;

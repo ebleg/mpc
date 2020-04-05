@@ -15,6 +15,10 @@ function [u] = positionControl(LTI_pos, pos, xref, par)
     Rbar = kron(eye(par.posCtrl.dim.N), par.posCtrl.R);
     % Stack references vertically
     xref = reshape(xref, [(par.posCtrl.dim.N+1)*par.posCtrl.dim.x, 1]);
+    Tf = T((end-par.posCtrl.dim.x+1):end,:);
+    Sf = S((end-par.posCtrl.dim.x+1):end,:);
+    xf = xref((end-par.posCtrl.dim.x+1):end);
+    Psqrt = chol(par.posCtrl.P);
     
     % Define quadratic programming problem
     H = S'*Qbar*S + Rbar;
@@ -29,8 +33,9 @@ function [u] = positionControl(LTI_pos, pos, xref, par)
         minimize(quad_form(u_N, H) + 2*h*u_N);
 
         % Input constraints
-        par.posCtrl.T*u_N <= par.posCtrl.f;
+        par.posCtrl.T*u_N <= par.posCtrl.f; 
         % Terminal set
+        norm(Psqrt*(Tf*pos + Sf*u_N - xf)) <= par.posCtrl.Xf; % avoid use of quad_form when possible
     cvx_end
     
     u = u_N(1:par.posCtrl.dim.u);

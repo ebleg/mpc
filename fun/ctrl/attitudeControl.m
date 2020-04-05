@@ -22,18 +22,7 @@ N = par.angCtrl.dim.N;
 Qbar = blkdiag(kron(eye(N), par.angCtrl.Q), par.angCtrl.P);
 Rbar = kron(eye(N), par.angCtrl.R);
 
-% uref = uref(1: N*par.angCtrl.dim.u)';
 xref = xref(1:(N+1)*par.angCtrl.dim.x)';
-
-% Constraint
-% a_lim = par.cstr.maxAcc*ones(N-1,1);
-% x_lim = par.cstr.maxAng;
-% 
-% F = zeros(N-1,N*par.angCtrl.dim.u);
-% for i = 1:(N-1)
-%    F(i, (i-1)*dim.u + 1) = -1;
-%    F(i, i*dim.u + 1) = 1;
-% end
 
 H = S'*Qbar*S + Rbar;
 h = S'*Qbar*T*att + S'*Qbar*xref; %+Rbar'*uref

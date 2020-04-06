@@ -77,12 +77,13 @@ fprintf('Starting simulation loop...\n'); tic;
 
 % i=2:(nsteps-predictionBuffer)
 for i=2:50
+    disp(num2str(i))
     sol.u.pos(:,i) = positionMPC(sol.x.ang(:,i-1), ...
                                  sol.x.pos(:,i-1), ...
                                  sol.t(i), ...
                                  ref, par);
-    xref(:,i:i+par.angCtrl.dim.N) = [sol.u.pos(2:3,i); mean(ref.x.ang(3:6,i:i+par.angCtrl.dim.N))];
-    sol.u.ang(:,i) = attitudeMPC(xref(:,i:end), par, sol.t(i), sol.x.ang(:,i-1));
+    xref(:,i) = [sol.u.pos(2:3,i); ref.x.ang(3:5,i); ref.x.ang(6,i+par.angCtrl.dim.N)];
+    sol.u.ang(:,i) = attitudeMPC(xref(:,i), par, sol.t(i), sol.x.ang(:,i-1));
     g = @(x) rotationalDynamics(x, [sol.u.pos(1,i); sol.u.ang(:,i)] , par);
     sol.x.ang(:,i) = GL4(g, sol.x.ang(:,i-1), par);
     f = @(x) translationalDynamics(x, [sol.u.pos(:,i); sol.x.ang(6,i)] , par);

@@ -1,5 +1,6 @@
-clear; clear attitudeMPC; clear positionMPC;
+clear; clear attitudeMPC; clear positionMPC; clear attitudeOutputMPC;
 
+%% Initialization file
 addpath('..');
 addpath('../fun');
 addpath('../fun/ctrl');
@@ -7,10 +8,9 @@ addpath('../fun/mod');
 addpath('../fun/vis');
 addpath('../tools');
 run parameters
+run initLTI
 
-par.sim.tmax = 20;
-
-% path = @(t) [0*t; 0*t; t]; % Fly straight up
+%% Make path and references
 path = @(t) [4*cos(t); 4*sin(t); t/3]; %Ellipsoidal spiral
 
 sol = struct();
@@ -24,27 +24,30 @@ sol.u.ang = nan(par.angCtrl.dim.u, nsteps);
 
 ref = generateReference(sol.t, path, par);
 
-sol.x.ang(:,1) = ref.x.ang(:,1);
 % sol.x.ang = ref.x.ang;
 % sol.u.ang = ref.u.ang;
 sol.u.pos = ref.u.pos;
 sol.x.pos = ref.x.pos;
-xref = [sol.u.pos(2:3,:); ref.x.ang(3:6,:)];
+sol.x.ang(:,1) = ref.x.ang(:,1);
+ref.y.ang = LTI.C*ref.x.ang;
 
-predictionBuffer = ceil(par.angCtrl.dim.N*par.angCtrl.predInt/par.sim.h);
-
-for i=2:(nsteps-predictionBuffer)
-    disp(num2str(i));
-    sol.u.ang(:,i) = attitudeMPC([], par, ref.t, [], xref(:,1), ref.x.ang(:,i));
-    g = @(x) rotationalDynamics(x, [sol.u.pos(1,i); sol.u.ang(:,i)] , par);
-    sol.x.ang(:,i) = GL4(g, sol.x.ang(:,i-1), par);
+for i = 1:10
+    disp(num2str(i))
+    yref = ref.y.ang(:,i);
+    [x, u, x_0, xehat_0, e] = attitudeOutputControl(LTI, LTI_e, par, yref, pred, x_1, xehat_1);
+    sol.x.ang(:,i) = x;
+    sol.u.ang(:,i) = u;
+    error(:,i) = e;
+    x_1 = x_0;
+    xehat_1 = xehat_0;
 end
 
-close all;
-figure; ax = gca; axis equal; grid; grid minor; hold on;
-title('Quadcopter simulation'); xlabel('x [m]'); ylabel('y [m]'); zlabel('z [m]');
-% refPlot = plotTrajectory(ax, ref.t, ref.x.pos, '.', 'Reference trajectory');
-% refPlot = plotTrajectory(ax, ref.t, ref.x.pos, '.', 'Reference trajectory');
-solPlot = plotTrajectory(ax, sol.t, sol.x.pos, '.', 'Simulated trajectory');
-legend();
-% simulateDrone(ax, sol, par);
+plot(error(1,:),'b')
+hold on
+plot(error(2,:),'r')
+plot(error(3,:),'y')
+plot(error(4,:),'g')
+plot(error(5,:),'m')
+plot(error(6,:),'c')
+title('Offset free output MPC'); ylabel('Error'); xlabel('Iteration');
+

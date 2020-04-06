@@ -4,7 +4,7 @@ function [T,S]=predmodgen_output(LTI,dim)
 %This function computes the prediction matrices to be used in the
 %optimization problem
 
-%Prediction matrix from initial state
+% Prediction matrix from initial state
 T=zeros(dim.x*(dim.N+1),dim.x);
 for k=0:dim.N
     T(k*dim.x+1:(k+1)*dim.x,:)=LTI.A^k;

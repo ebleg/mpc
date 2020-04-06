@@ -7,6 +7,7 @@ addpath('../fun/mod');
 addpath('../fun/vis');
 addpath('../tools');
 run parameters
+run initLTI
 
 path = @(t) [4*cos(t); 4*sin(t); t/3]; %Ellipsoidal spiral
 
@@ -27,17 +28,39 @@ sol.x.ang(:,1) = ref.x.ang(:,1);
 sol.u.pos = ref.u.pos;
 sol.x.pos = ref.x.pos;
 % xref = ref.x.ang;
+yref(:,1) = LTI.C*ref.x.ang(:,1);
 
+x_1 = LTI.x0;
+xehat_1=[ref.x.ang(:,1); LTI.d];
 
 predictionBuffer = ceil(par.angCtrl.dim.N*par.angCtrl.predInt/par.sim.h);
 
 % i=2:(nsteps-predictionBuffer)
-for i=2:(nsteps-predictionBuffer)
+for i=2:50
     disp(num2str(i));
-    sol.u.ang(:,i) = attitudeMPC(ref.x.ang(:,i), par, sol.t(i), sol.x.ang(:,i-1));
+    [u, x_0, xehat_0, e] = attitudeMPC(LTI, LTI_e, par, yref(:,i-1), pred, x_1, xehat_1, sol.t(i));
+    sol.u.ang(:,i) = u;
+    error(:,i) = e;
+    x_1 = x_0;
+    xehat_1 = xehat_0;
+    % Regular MPC
+    % sol.u.ang(:,i) = attitudeMPC(ref.x.ang(:,i), par, sol.t(i), sol.x.ang(:,i-1));
     g = @(x) rotationalDynamics(x, [sol.u.pos(1,i); sol.u.ang(:,i)] , par);
     sol.x.ang(:,i) = RK4(g, sol.x.ang(:,i-1), par.sim.h);
+%     sol.x.ang(:,i) = ref.x.ang(:,i);
+    yref(:,i) = LTI.C * sol.x.ang(:,i-1);
 end
+
+% close all;
+% figure();
+% plot(error(1,:),'b')
+% hold on
+% plot(error(2,:),'r')
+% plot(error(3,:),'y')
+% plot(error(4,:),'g')
+% plot(error(5,:),'m')
+% plot(error(6,:),'c')
+% title('Offset free output MPC'); ylabel('Error'); xlabel('Iteration');
 
 close all;
 figure; ax = gca; axis equal; grid; grid minor; hold on;

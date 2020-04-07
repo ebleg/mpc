@@ -86,7 +86,7 @@ fprintf('Done - '); toc;
 delete(wdw);
 
 %% Visualisation
-close all;
+% close all;
 figure; ax = gca; axis equal; grid; grid minor; hold on;
 title('Quadcopter simulation'); xlabel('x [m]'); ylabel('y [m]'); zlabel('z [m]');
 refPlot = plotTrajectory(ax, ref.t, ref.x.pos, '.', 'Reference trajectory');

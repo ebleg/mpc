@@ -5,25 +5,15 @@ LTI = struct();
 LTI.A = LTI_rot.A;
 LTI.B = LTI_rot.B;
 LTI.Cplot = LTI_rot.C;
-LTI.C = LTI_rot.C;
+LTI.C = LTI_rot.C; %LTI.C = LTI_rot.C(4:6,:);
 LTI.D = LTI_rot.D;
-% LTI.Cd=zeros(6,6);
-LTI.Bd = [0.1, 0  , 0  ;...
-          0  , 0  , 0.1;...
-          0.1, 0  , 0  ;...
-          0  , 0  , 0  ;...
-          0  , 0  , 0.1;...
-          0  , 0.1, 0 ];
-      
-LTI.Cd = [0  ,0.1,0  ;...
-          0  ,0  ,0.1;...
-          0.1,0  ,0  ;...
-          0  ,0  ,0  ;...
-          1  ,0  ,0  ;...
-          0  ,0  ,0 ];
+LTI.Bd = [0.1, 0, 0.1, 0, 0, 0.1]';
+% LTI.Bd = ones(6,1)
+LTI.Cd = [1; 0 ; 0.5];
+% LTI.Cd = ones(3,1)
      
 LTI.x0 = [0 0 0.02 -0.5 -0.005 1.6]';
-LTI.d = [0.01 0.01 0.01]';
+LTI.d = 0.1;
 
 % Extended system computation
 LTI_e = struct();
@@ -37,13 +27,13 @@ par.angCtrl.dime = struct();
 [~, par.angCtrl.dime.u] = size(LTI_e.B);
 [par.angCtrl.dime.y, ~] = size(LTI_e.C);
 par.angCtrl.dime.N = dim.N;
-par.angCtrl.dime.d = 3;
+par.angCtrl.dime.d = 1;
 
 pred = struct();
 
-% pred.Q_e=blkdiag(par.angCtrl.Q,zeros(dim.d));            %weight on output
-% pred.R_e=par.angCtrl.R;                                  %weight on input
-% pred.P_e=blkdiag(par.angCtrl.P,zeros(dim.d));            %terminal cost
+pred.Q_e=10*blkdiag(par.angCtrl.Q,zeros(dim.d));            %weight on output
+pred.R_e=par.angCtrl.R;                                  %weight on input
+pred.P_e=blkdiag(par.angCtrl.P,zeros(dim.d));            %terminal cost
 
 pred.Qbar = blkdiag(kron(eye(dim.N),par.angCtrl.Q),par.angCtrl.P);
 pred.Rbar = kron(eye(dim.N),par.angCtrl.R);
@@ -63,8 +53,9 @@ H_e = pred.S'*pred.Qbar*pred.S+pred.Rbar;
 pred.H_e = H_e;
 % pred.h_e = h_e;
 
-[~,~,G] = dare(LTI_e.A',LTI_e.C',eye(par.angCtrl.dime.x), eye(par.angCtrl.dime.u + par.angCtrl.dime.d));
-pred.G = G'; % Observer gain
+G=place(LTI_e.A',LTI_e.C',[0.5; 0.4; 0.45;0.6;0.65; 0.6; 0.6])';
+% [X,G,L] = idare(LTI.A',LTI.B,par.angCtrl.Q, par.angCtrl.R,[],[]);
+pred.G = G; % Observer gain
 
 %% Stability
 controllability(LTI_rot)

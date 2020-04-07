@@ -1,14 +1,12 @@
-function [u, x_1, xehat_1, e] = attitudeOutputControl(LTI, LTI_e, par, uref, yref, pred, x_1, xehat_1)
+function [u, x_1, xehat_1, e] = attitudeOutputControl(LTI, LTI_e, par, yref, pred, x_1, xehat_1)
     % Calculates output of attitude controller using offset-free output MPC
-
     dim = par.angCtrl.dim;
-
-    dist = LTI.d;                           % Dit kan moeilijker gemaakt worden
-
+    dist = LTI.d; 
+    
     %% Optimization
     % Output
     x = x_1;
-%     y = LTI.C*x;
+    y = LTI.C*x;
 
     % Observer
     xehat = xehat_1;
@@ -17,7 +15,7 @@ function [u, x_1, xehat_1, e] = attitudeOutputControl(LTI, LTI_e, par, uref, yre
 
     % Target Selector
     A_output = [eye(dim.x)-LTI.A -LTI.B; 
-                LTI.C, zeros(dim.x, dim.u)];
+                LTI.C, zeros(dim.y, dim.u)];
     b_output = [LTI.Bd*dhat; yref-LTI.Cd*dhat];
 
     H_OTS = blkdiag(zeros(dim.x),eye(dim.u));
@@ -35,7 +33,6 @@ function [u, x_1, xehat_1, e] = attitudeOutputControl(LTI, LTI_e, par, uref, yre
     u_r = x_r_u_r(dim.x+1:end);
 
     x_tilde = x_r - xhat;
-    u_tilde = u_r - uref;
     h_e = (x_tilde'*pred.T'*pred.Qbar*pred.S)'-...
             pred.S'*pred.Qbar*kron(ones(dim.N+1,1),eye(dim.x))*x_r -...
             pred.Rbar*kron(ones(dim.N,1),eye(dim.u))*u_r;
@@ -46,10 +43,10 @@ function [u, x_1, xehat_1, e] = attitudeOutputControl(LTI, LTI_e, par, uref, yre
         subject to
         
         % input contraints
-        par.angCtrl.F*(u_N - repmat(u_r,dim.N,1)) <= par.angCtrl.f;
+        par.angCtrl.F*(u_N) <= par.angCtrl.f;
     cvx_end
     
-    u_opt = u_r +u_N(1:dim.u);
+    u_opt = u_N(1:dim.u);
 
     % Real system
     x_1 = LTI.A*x + LTI.B*u_opt + LTI.Bd*dist;

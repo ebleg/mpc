@@ -65,9 +65,9 @@ par.cstr.maxAcc = (0.08 - 0.039)/par.drone.rotor.I*0.85; % Seems reasonable
 % Problem dimensions
 par.angCtrl.dim.u = 3; % Input vector length
 par.angCtrl.dim.x = 6; % State vector length
-par.angCtrl.dim.y = 6; % Assume full-state knowledge for now
+par.angCtrl.dim.y = 3; % 
 par.angCtrl.dim.N = 8; % Prediction horizon
-par.angCtrl.dim.d = 3; % disturbance
+par.angCtrl.dim.d = 1; % disturbance
 
 % Sample rate
 par.angCtrl.sampleInt = par.sim.h;   % Position MPC sample rate; should be at least 10 times smaller than the sample rate for the position control and a divisor of the sample rate for the position control

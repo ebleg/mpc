@@ -12,7 +12,7 @@ function [u_pos] = positionMPC(ang, pos, t, ref, par)
     
     %% Optimize input
     if k*par.posCtrl.sampleInt <= t
-        
+        disp('position')
         % Adaptive MPC
 %         setpt = [par.drone.m*par.env.g; ang(4); ang(5); ang(6)];
         setpt = [par.drone.m*par.env.g; 0; 0; ang(6)];

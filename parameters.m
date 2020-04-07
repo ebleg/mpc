@@ -80,7 +80,7 @@ par.posCtrl.dim.N = 25; % Prediction horizon
 % Cost matrices
 par.posCtrl.Q = diag([1 1 1 25 25 25]);
 par.posCtrl.R = diag([.05 1. 1.]);
-par.posCtrl.P = diag([1 1 1 50 50 50]); % Might be overwritten by DARE solution
+par.posCtrl.P = diag([1 1 1 10 10 1]); % Might be overwritten by DARE solution
 
 % Sample rate
 par.posCtrl.sampleInt = 10*par.angCtrl.sampleInt;   % Position MPC sample rate

@@ -61,13 +61,13 @@ par.angCtrl.predInt = par.sim.h;      % Position MPC prediction interval
 par.angCtrl.LTI = c2d(simpRotationalDynamics(par, [0 0 0 0 0 0]'), par.angCtrl.sampleInt, 'zoh'); % Linear system around hover
 
 % Cost matrices
-par.angCtrl.Q = diag([1 1 1 1 1 1]);
-par.angCtrl.R = diag([0.01 0.01 0.01]);
+par.angCtrl.Q = diag([1 1 1 20 20 20]);
+par.angCtrl.R = diag([0.1 0.1 0.1]);
 par.angCtrl.P =  dare(par.angCtrl.LTI.A, par.angCtrl.LTI.B, par.angCtrl.Q, par.angCtrl.R);
 
 % Constraints
 % [par.angCtrl.F, par.angCtrl.f] = attCstrMatrix(par);
-par.angCtrl.Xf = 400;
+par.angCtrl.Xf = 4.1;
 [par.angCtrl.F, par.angCtrl.f] = attCstrMatrix2(par);
 
 %% Position control parameters

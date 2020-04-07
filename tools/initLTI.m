@@ -44,6 +44,7 @@ pred.T = T;
 pred.S = S;
 pred.Tf = pred.T((end-par.angCtrl.dim.x+1):end,:);
 pred.Sf = S((end-par.angCtrl.dim.x+1):end,:);
+pred.Psqrt = chol(par.posCtrl.P);
 
 H_e = pred.S'*pred.Qbar*pred.S+pred.Rbar;   
 % h_e = [pred.S'*pred.Qbar*pred.T,...

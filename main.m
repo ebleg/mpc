@@ -26,15 +26,6 @@ run header
 fprintf('Objective trajectory: Ellipsoidal spiral\n') 
 path = @(t) [2*cos(t); 12*sin(t); t/3];
 
-% fprintf('\nObjective trajectory: RRT* generated path\n\n') 
-% load('shapes.mat');
-% rrtpath = load('path.mat');
-% rrtpath = rrtpath.path;
-% load('nodes.mat');
-% par.sim.tmax = 20;
-% 
-% path = @(t) piecewiseLinearPath(nodes, rrtpath, par, t);
-
 % fprintf('\nObjective trajectory: Nondifferentiable 2D trajectory\n\n') 
 % path = @(t) [t; 0*t; sign(t-2)+1]; 
 
@@ -77,13 +68,13 @@ predictionBuffer = max(predictionBufferPos, predictionBufferAng);
 fprintf('Starting simulation loop...\n'); tic;
 
 % i=2:(nsteps-predictionBuffer)
-for i=2:50
-%     disp(num2str(i))
+for i=2:(N-predictionBuffer)
     sol.u.pos(:,i) = positionMPC(sol.x.ang(:,i-1), ...
                                  sol.x.pos(:,i-1), ...
                                  sol.t(i), ...
                                  ref, par);
-    yref(:,i) = LTI.C * ref.x.ang(:,i);
+%     yref(:,i) = LTI.C * ref.x.ang(:,i);
+    yref(:,i) = [sol.u.pos(2:3,i); ref.x.ang(6,i)];
     [u, x_0, xehat_0, e] = attitudeMPC(LTI, LTI_e, par, uref(:,1), yref(:,i), pred, x_1, xehat_1, sol.t(i));
     x_1 = x_0; xehat_1 = xehat_0; sol.u.ang(:,i) = u; 
     g = @(x) rotationalDynamics(x, [sol.u.pos(1,i); sol.u.ang(:,i)] , par);

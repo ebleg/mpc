@@ -13,7 +13,7 @@ velC = par.cstr.maxVel^2*par.drone.rotor.Kf; % Speed constraint value
 [P, K, L] = idare(sysd.A, sysd.B, Q, R);
 [V, D] = eig(P);
 
-a = 4.1;
+a = 4.05;
 res = 20;
 
 linspace2 = @(i) linspace(-sqrt(a/D(i,i)), sqrt(a/D(i,i)), res);
@@ -35,10 +35,14 @@ for i = 1:Npts
     if x'*P*x <= a
         if inU(-K*x, velC)
             u = -K*x;
-            xnext = A*x + B*u;
-            if ((0.5*xnext'*P*xnext - 0.5*x'*P*x) > -(0.5*x'*Q*x + 0.5*u'*R*u)+1e-5) % 1-e5 for numerical purposes
+            xnext = dscrRotatationalDynamics(x, u,  par.angCtrl.sampleInt, par);
+            if ((0.5*xnext'*P*xnext - 0.5*x'*P*x) > -(0.5*x'*Q*x + 0.5*u'*R*u)+1e-2) % 1-e5 for numerical purposes
                 disp('failed for Lyapunov decrease'), i, x'
                 return;
+            end
+            if xnext'*P*xnext > a
+                disp('failed for control invariance'), i, x'
+                return;                
             end
         else
             disp('failed for U'), x'
@@ -47,24 +51,6 @@ for i = 1:Npts
     end     
 end
 
-% CONTROL INVARIANCE
-% for i = 1:Npts
-%     tmp = [X1(i) X2(i) X3(i) X4(i) X5(i) X6(i)]';
-%     x = V*tmp; % Convert to normal axes
-%             
-%     if x'*P*x <= a
-%         inTs(i) = true;
-%         if inU(-K*x, velC)
-%             xnext = A*x + B*(-K*x);
-%             if xnext'*P*xnext > a % Control invariance check
-%                 disp('failed for invariance'), x'
-%             end
-%         else
-%             disp('failed for U'), x'
-%         end
-%     end     
-% end
-% %%
 % RNG1 = nan(Npts, 1);
 % RNG2 = nan(Npts, 1);
 % RNG3 = nan(Npts, 1);
@@ -91,4 +77,10 @@ function check = inU(u, velC)
     check3 = (u(2) >= -velC) && (u(2) <= velC);
     check4 = (u(3) >= -2*velC) && (u(3) <= 2*velC);
     check = check2 && check3 && check4;
+end
+
+function x1 = dscrRotatationalDynamics(x0, u0, int, par)
+    f = @(t, x) rotationalDynamics(x, [par.drone.m*par.env.g; u0], par);
+    tmp = ode23(f, [0 int], x0);
+    x1 = tmp.y(:,end);
 end

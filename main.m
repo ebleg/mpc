@@ -58,7 +58,7 @@ x_1 = LTI.x0;
 xehat_1=[ref.x.ang(:,1); LTI.d];
 
 % predictionBuffer = ceil(par.posCtrl.dim.N*par.posCtrl.predInt/par.sim.h);
-wdw = waitbar(0.02, sprintf('Simulation progress (%d)', 0.02*100));
+wdw = waitbar(0.02, sprintf('Simulation progress %d%%', 0.02*100));
 
 predictionBufferPos = ceil(par.posCtrl.dim.N*par.posCtrl.predInt/par.sim.h);
 predictionBufferAng = ceil(par.angCtrl.dim.N*par.angCtrl.predInt/par.sim.h);
@@ -79,6 +79,8 @@ for i=2:(nsteps-predictionBuffer)
     sol.x.ang(:,i) = GL4(g, sol.x.ang(:,i-1), par);
     f = @(x) translationalDynamics(x, [sol.u.pos(:,i); sol.x.ang(6,i)] , par);
     sol.x.pos(:,i) = GL4(f, sol.x.pos(:,i-1), par);
+    waitbar(i/(nsteps-predictionBuffer), wdw, sprintf('Simulation progress %d%%', round(i/(nsteps-predictionBuffer)*100)));
+
 end
 fprintf('Done - '); toc;
 delete(wdw);

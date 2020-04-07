@@ -9,7 +9,7 @@ LTI.C = LTI_rot.C; %LTI.C = LTI_rot.C(4:6,:);
 LTI.D = LTI_rot.D;
 LTI.Bd = [0.1, 0, 0.1, 0, 0, 0.1]';
 % LTI.Bd = ones(6,1)
-LTI.Cd = [1; 0 ; 0.5];
+LTI.Cd = [0.5; 0.5 ; 0];
 % LTI.Cd = ones(3,1)
      
 LTI.x0 = [0 0 0.02 -0.5 -0.005 1.6]';
@@ -31,7 +31,7 @@ par.angCtrl.dime.d = 1;
 
 pred = struct();
 
-pred.Q_e=10*blkdiag(par.angCtrl.Q,zeros(dim.d));            %weight on output
+pred.Q_e=10*blkdiag(par.angCtrl.Q,zeros(dim.d));         %weight on output
 pred.R_e=par.angCtrl.R;                                  %weight on input
 pred.P_e=blkdiag(par.angCtrl.P,zeros(dim.d));            %terminal cost
 
@@ -39,12 +39,12 @@ pred.Qbar = blkdiag(kron(eye(dim.N),par.angCtrl.Q),par.angCtrl.P);
 pred.Rbar = kron(eye(dim.N),par.angCtrl.R);
 pred.Pbar = par.angCtrl.P;
 
-% pred.Qbar=blkdiag(kron(eye(dim.N),pred.Q_e),pred.P_e);
-% pred.Rbar=kron(eye(dim.N),pred.R_e);
-
 [T,S]=predmodgen_output(LTI,par.angCtrl.dim);
 pred.T = T;
 pred.S = S;
+pred.Tf = pred.T((end-par.angCtrl.dim.x+1):end,:);
+pred.Sf = S((end-par.angCtrl.dim.x+1):end,:);
+pred.Psqrt = chol(par.posCtrl.P);
 
 H_e = pred.S'*pred.Qbar*pred.S+pred.Rbar;   
 % h_e = [pred.S'*pred.Qbar*pred.T,...

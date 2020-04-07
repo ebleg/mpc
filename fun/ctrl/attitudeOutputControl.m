@@ -1,4 +1,4 @@
-function [u, x_1, xehat_1, e] = attitudeOutputControl(LTI, LTI_e, par, yref, pred, x_1, xehat_1)
+function [u, x_1, xehat_1, e] = attitudeOutputControl(LTI, LTI_e, par, uref, yref, pred, x_1, xehat_1)
 % Calculates output of attitude controller using offset-free output MPC
 
 dim = par.angCtrl.dim;
@@ -43,9 +43,10 @@ x_r = x_r_u_r(1:dim.x);
 u_r = x_r_u_r(dim.x+1:end);
 
 x_tilde = x_r - xhat;
-h_e = (x_tilde'*pred.T'*pred.Qbar*pred.S)' ...
-            - pred.S'*pred.Qbar*kron(ones(dim.N+1,1),eye(dim.x))*x_r...
-            - pred.Rbar*kron(ones(dim.N,1),eye(dim.u))*u_r;
+u_tilde = u_r - uref;
+h_e = (x_tilde'*pred.T'*pred.Qbar*pred.S)'-...
+        pred.S'*pred.Qbar*kron(ones(dim.N+1,1),eye(dim.x))*x_r -...
+        pred.Rbar*kron(ones(dim.N,1),eye(dim.u))*u_r;
 
 cvx_begin quiet
     variable u_N(dim.u*dim.N)
@@ -54,7 +55,7 @@ cvx_begin quiet
     % input contraints
     par.angCtrl.F*(u_N - repmat(u_r,dim.N,1)) <= par.angCtrl.f;
 cvx_end    
-u_opt = u_r;
+u_opt = u_r +u_N(1:dim.u);
 
 % Real system
 x_1 = LTI.A*x + LTI.B*u_opt + LTI.Bd*dist;

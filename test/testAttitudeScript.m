@@ -39,7 +39,6 @@ xe(:,1) = [x(:,1);dist];
 xehat(:,1) = [ref.x.ang(:,1); LTI.d]';
 yref = LTI.C*ref.x.ang;
 uref = ref.u.ang;
-u_opt(:,1) = uref(:,1);
 
 simTime = 10;
 
@@ -78,7 +77,7 @@ for i=1:simTime
             % input contraints
             par.angCtrl.F*u_N <= par.angCtrl.f;
     cvx_end    
-    u_opt = u_r;
+    u_opt = u_N(1:dim.u);
 %     sol.u.ang(1:dim.u,i) = u_opt;
 %     u_opt = ref.u.ang(:,i);
 
@@ -93,26 +92,20 @@ for i=1:simTime
     error(:,i) = x(:,i) - xhat;
 
     u = u_opt;
-    
-    P = par.angCtrl.P;
-    Vf(i) = 0.5*x(:,i)'*P*x(:,i);
-    l(i) = 0.5*x(:,i)'*par.angCtrl.Q*x(:,i);
+
+%     Vf(i) = 0.5*x(:,i)'* par.angCtrl.P*x(:,i);
+%     l(i) = 0.5*x(:,i)'*par.angCtrl.Q*x(:,i);
 end
 
-j = 1:1:simTime;
-plot(j, Vf)
+close all;
+plot(error(1,:),'b')
 hold on
-plot(j,l)
-
-% close all;
-% plot(error(1,:),'b')
-% hold on
-% plot(error(2,:),'r')
-% plot(error(3,:),'y')
-% plot(error(4,:),'g')
-% plot(error(5,:),'m')
-% plot(error(6,:),'c')
-% title('Offset free output MPC'); ylabel('Error'); xlabel('Iteration');
+plot(error(2,:),'r')
+plot(error(3,:),'y')
+plot(error(4,:),'g')
+plot(error(5,:),'m')
+plot(error(6,:),'c')
+title('Offset free output MPC'); ylabel('Error'); xlabel('Iteration');
 
 % close all;
 % plot(error_u(1,:),'b')

@@ -23,11 +23,12 @@ run header
 %% Define path to follow
 % Parameterized for x,y,z with respect to t
 % 
-% fprintf('Objective trajectory: Ellipsoidal spiral\n') 
-% path = @(t) [2*cos(t); 12*sin(t); t/3];
-sig = @(t) 1/(1+exp(-10*t));
-fprintf('\nObjective trajectory: Nondifferentiable 2D trajectory\n\n') 
-path = @(t) [3*t; 0*t; 5*sig(t-3)]; 
+fprintf('Objective trajectory: Ellipsoidal spiral\n') 
+path = @(t) [2*cos(t); 8*sin(t); t/3];
+
+% sig = @(t) 1/(1+exp(-10*t));
+% fprintf('\nObjective trajectory: Steep 2D trajectory\n\n') 
+% path = @(t) [3*t; 0*t; 5*sig(t-3)]; 
 
 % fprintf('\nObjective trajectory: Nondifferentiable 2D trajectory\n\n') 
 % path = @(t) [4*t; 0*t; sign(t-2)+1]; 
@@ -89,17 +90,13 @@ delete(wdw);
 
 %% Visualisation
 close all;
-figure; ax = gca; axis equal; grid; grid minor; hold on;
+ax = gca; axis equal; grid; grid minor; hold on;
 title('Quadcopter simulation'); xlabel('x [m]'); ylabel('y [m]'); zlabel('z [m]');
 refPlot = plotTrajectory(ax, ref.x.pos, '.', 'Reference trajectory');
 % refPlot = plotTrajectory(ax, ref.t.pos, refs.x.pos, '.', 'Reference trajectory');
 solPlot = plotTrajectory(ax, sol.x.pos, '.', 'Simulated trajectory');
 legend();
+view(45,45)
 simulateDrone(ax, sol, par);
 
-%%
-figure; ax = gca;
-subplot(211)
-plot(sol.t, sol.u.pos(3,:)); grid; grid minor; hold on;
-plot(sol.t, sol.x.ang(5,:));
 

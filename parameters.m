@@ -75,7 +75,7 @@ par.angCtrl.Xf = 4.1;
 par.posCtrl.dim.u = 3; % Input vector length
 par.posCtrl.dim.x = 6; % State vector length
 par.posCtrl.dim.y = 6; % Assume full-state knowledge for now
-par.posCtrl.dim.N = 25; % Prediction horizon
+par.posCtrl.dim.N = 10; % Prediction horizon
 
 % Cost matrices
 par.posCtrl.Q = diag([1 1 1 25 25 25]);
@@ -94,15 +94,3 @@ par.posCtrl.Xf = 0.5*ones(1,par.posCtrl.dim.x)*par.posCtrl.P*ones(par.posCtrl.di
 %% fsolve options
 par.settings.solve = optimoptions(@fsolve, 'Display', 'none');
 par.settings.opts = optimoptions('quadprog','Display','off');
-
-%% 
-Vf = [];
-l = [];
-for i=1:nsteps
-    Vf = [Vf (sol.x.pos(:,i) - ref.x.pos(:,i))'*par.posCtrl.P*(sol.x.pos(:,i) - ref.x.pos(:,i))];
-    l = [l (sol.x.pos(:,i) - ref.x.pos(:,i))'*par.posCtrl.Q*(sol.x.pos(:,i) - ref.x.pos(:,i)) + sol.u.pos(:,i)'*par.posCtrl.R*sol.u.pos(:,i)];
-end
-
-figure
-plot(sol.t(1:end-1), diff(Vf)); hold on;
-plot(sol.t(1:end-1), l(1:end-1));

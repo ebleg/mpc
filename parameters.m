@@ -15,7 +15,7 @@ par = struct();
 
 %% Simulation parameters
 par.sim.tmax = 2;
-par.sim.h = 0.02; % ODE integration timestep
+par.sim.h = 0.01; % ODE integration timestep
 
 %% Quadcopter properties
 par.drone.Ixx = 7.5e-3;
@@ -66,7 +66,7 @@ par.cstr.maxAcc = (0.08 - 0.039)/par.drone.rotor.I*0.85; % Seems reasonable
 par.angCtrl.dim.u = 3; % Input vector length
 par.angCtrl.dim.x = 6; % State vector length
 par.angCtrl.dim.y = 3; % 
-par.angCtrl.dim.N = 8; % Prediction horizon
+par.angCtrl.dim.N = 4; % Prediction horizon
 par.angCtrl.dim.d = 1; % disturbance
 
 % Sample rate
@@ -77,8 +77,8 @@ par.angCtrl.predInt = par.sim.h;      % Position MPC prediction interval
 par.angCtrl.LTI = c2d(simpRotationalDynamics(par, [0 0 0 0 0 0]'), par.angCtrl.sampleInt, 'zoh'); % Linear system around hover
 
 % Cost matrices
-par.angCtrl.Q = eye(par.angCtrl.dim.x)*diag([1 1 1 1 1 1]);%*diag([1 1 1 20 20 20]);
-par.angCtrl.R = eye(par.angCtrl.dim.u)*diag([0.01 0.01 0.01]);
+par.angCtrl.Q = diag([1 1 1 1 1 1]);
+par.angCtrl.R = diag([0.01 0.01 0.01]);
 par.angCtrl.P =  dare(par.angCtrl.LTI.A, par.angCtrl.LTI.B, par.angCtrl.Q, par.angCtrl.R);
 
 % Constraints

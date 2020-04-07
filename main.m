@@ -24,7 +24,7 @@ run header
 % Parameterized for x,y,z with respect to t
 
 fprintf('Objective trajectory: Ellipsoidal spiral\n') 
-path = @(t) [2*cos(t); 12*sin(t); t/3];
+path = @(t) [4*cos(t); 4*sin(t); t/3];
 
 % fprintf('\nObjective trajectory: Nondifferentiable 2D trajectory\n\n') 
 % path = @(t) [t; 0*t; sign(t-2)+1]; 
@@ -62,7 +62,7 @@ wdw = waitbar(0.02, sprintf('Simulation progress %d%%', 0.02*100));
 
 predictionBufferPos = ceil(par.posCtrl.dim.N*par.posCtrl.predInt/par.sim.h);
 predictionBufferAng = ceil(par.angCtrl.dim.N*par.angCtrl.predInt/par.sim.h);
-predictionBuffer = max(predictionBufferPos, predictionBufferAng);
+predictionBuffer = max(predictionBufferPos + predictionBufferAng);
 %% Simulation loop
 fprintf('Starting simulation loop...\n'); tic;
 
@@ -89,7 +89,7 @@ delete(wdw);
 close all;
 figure; ax = gca; axis equal; grid; grid minor; hold on;
 title('Quadcopter simulation'); xlabel('x [m]'); ylabel('y [m]'); zlabel('z [m]');
-% refPlot = plotTrajectory(ax, ref.t, ref.x.pos, '.', 'Reference trajectory');
+refPlot = plotTrajectory(ax, ref.t, ref.x.pos, '.', 'Reference trajectory');
 % refPlot = plotTrajectory(ax, ref.t.pos, refs.x.pos, '.', 'Reference trajectory');
 solPlot = plotTrajectory(ax, sol.t, sol.x.pos, '.', 'Simulated trajectory');
 legend();

@@ -33,9 +33,9 @@ function [u, x_1, xehat_1, e] = attitudeOutputControl(LTI, LTI_e, par, yref, pre
     u_r = x_r_u_r(dim.x+1:end);
 
     x_tilde = x_r - xhat;
-    h_e = (x_tilde'*pred.T'*pred.Qbar*pred.S)'-...
-            pred.S'*pred.Qbar*kron(ones(dim.N+1,1),eye(dim.x))*x_r -...
-            pred.Rbar*kron(ones(dim.N,1),eye(dim.u))*u_r;
+    h_e = (x_tilde'*pred.T'*pred.Qbar*pred.S)';%-...
+%             pred.S'*pred.Qbar*kron(ones(dim.N+1,1),eye(dim.x))*x_r -...
+%             pred.Rbar*kron(ones(dim.N,1),eye(dim.u))*u_r;
 
     cvx_begin quiet
         variable u_N(dim.u*dim.N)
@@ -43,7 +43,7 @@ function [u, x_1, xehat_1, e] = attitudeOutputControl(LTI, LTI_e, par, yref, pre
         subject to
         
         % input contraints
-        par.angCtrl.F*(u_N) <= par.angCtrl.f;
+%         par.angCtrl.F*(u_N) <= par.angCtrl.f;
     cvx_end
     
     u_opt = u_N(1:dim.u);

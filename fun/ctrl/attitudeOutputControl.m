@@ -43,7 +43,9 @@ function [u, x_1, xehat_1, e] = attitudeOutputControl(LTI, LTI_e, par, yref, pre
         subject to
         
         % input contraints
-%         par.angCtrl.F*(u_N) <= par.angCtrl.f;
+        par.angCtrl.F*u_N <= par.angCtrl.f;
+        % Terminal set: x_N*(par.angCtrl.P)*x_N<b;
+%         (pred.Tf*x + pred.Sf*u_N)'*par.angCtrl.P*(pred.Tf*x + pred.Sf*u_N)<=par.angCtrl.Xf;
     cvx_end
     
     u_opt = u_N(1:dim.u);

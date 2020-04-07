@@ -32,8 +32,6 @@ cvx_begin quiet
     subject to
     % input contraints
     par.angCtrl.F*u_opt <= par.angCtrl.f;
-    (T * att + S *u_N)'*par.angCtrl.P*(T * att + S *u_N);
-    x_N*(par.angCtrl.P)*x_N;
 %     F * u_N <= a_lim
 %     % state constraints
 %     S*u_opt <= -T*att + par.angCtrl.x_lim;

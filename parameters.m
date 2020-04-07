@@ -83,7 +83,7 @@ par.angCtrl.P =  dare(par.angCtrl.LTI.A, par.angCtrl.LTI.B, par.angCtrl.Q, par.a
 
 % Constraints
 [par.angCtrl.F, par.angCtrl.f] = attCstrMatrix(par);
-par.angCtrl.x_lim = 0.5;
+par.angCtrl.Xf = 400;
 
 %% Position control parameters
 % Problem dimensions

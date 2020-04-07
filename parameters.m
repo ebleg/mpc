@@ -14,7 +14,7 @@
 par = struct();
 
 %% Simulation parameters
-par.sim.tmax = 2;
+par.sim.tmax = 1;
 par.sim.h = 0.01; % ODE integration timestep
 
 %% Quadcopter properties
@@ -38,22 +38,6 @@ par.drone.u2omega = par.drone.omega2u^-1; % precompute for efficiency
 
 %% General parameters
 par.env.g = 9.80665;
-
-%% Shorthand parameters
-% Stored for computational efficiency in simpRotationalDynamics and 
-% simpTranslationalDynamics
-% [from ElKholy]
-
-par.drone.a1 = (par.drone.Iyy - par.drone.Izz)./par.drone.Ixx;
-par.drone.a2 = par.drone.rotor.I/par.drone.Ixx;
-par.drone.a3 = (par.drone.Izz- par.drone.Ixx)/par.drone.Iyy;
-par.drone.a4 = par.drone.rotor.I/par.drone.Iyy;
-par.drone.a5 = (par.drone.Ixx - par.drone.Iyy)/par.drone.Izz;
-par.drone.b1 = par.drone.l/par.drone.Ixx;
-par.drone.b2 = par.drone.l/par.drone.Iyy;
-par.drone.b3 = par.drone.l/par.drone.Izz;
-
-par.drone.nomThrust = par.drone.m*par.env.g/4;
 
 %% Input control parameters
 par.cstr.maxVel = 285; % [rad/s], Include 85% SF margin to reduce wear on the gearbox
@@ -82,8 +66,9 @@ par.angCtrl.R = diag([0.01 0.01 0.01]);
 par.angCtrl.P =  dare(par.angCtrl.LTI.A, par.angCtrl.LTI.B, par.angCtrl.Q, par.angCtrl.R);
 
 % Constraints
-[par.angCtrl.F, par.angCtrl.f] = attCstrMatrix(par);
+% [par.angCtrl.F, par.angCtrl.f] = attCstrMatrix(par);
 par.angCtrl.Xf = 400;
+[par.angCtrl.F, par.angCtrl.f] = attCstrMatrix2(par);
 
 %% Position control parameters
 % Problem dimensions

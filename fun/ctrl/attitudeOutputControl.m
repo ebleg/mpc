@@ -23,7 +23,7 @@ function [u, x_1, xehat_1, e] = attitudeOutputControl(LTI, LTI_e, par, yref, pre
 
     % OTS
     cvx_begin quiet
-        variable x_r_u_r(dim.x+dim.u)
+        variable x_r_u_r(dim.x+dim.u, 1)
         minimize (1/2*quad_form(x_r_u_r, H_OTS) + h_OTS'*x_r_u_r)
         subject to
         A_output * x_r_u_r <= b_output;
@@ -38,14 +38,15 @@ function [u, x_1, xehat_1, e] = attitudeOutputControl(LTI, LTI_e, par, yref, pre
 %             pred.Rbar*kron(ones(dim.N,1),eye(dim.u))*u_r;
 
     cvx_begin quiet
-        variable u_N(dim.u*dim.N)
-        minimize ( (1/2)*quad_form(u_N,pred.H_e) + (h_e'*u_N ))
+        variable u_N(dim.u*dim.N,1)
+        minimize ( (1/2)*quad_form(u_N, pred.H_e) + (h_e'*u_N ))
         subject to
         
         % input contraints
         par.angCtrl.F*u_N <= par.angCtrl.f;
         % Terminal set: x_N*(par.angCtrl.P)*x_N<b;
 %         (pred.Tf*x + pred.Sf*u_N)'*par.angCtrl.P*(pred.Tf*x + pred.Sf*u_N)<=par.angCtrl.Xf;
+        par.angCtrl.F*(u_N) <= par.angCtrl.f;
     cvx_end
     
     u_opt = u_N(1:dim.u);

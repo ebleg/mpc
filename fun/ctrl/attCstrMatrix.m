@@ -18,7 +18,6 @@ function [F_u,f_u] = attCstrMatrix(par)
 
     cstr1 = par.cstr.maxVel^2*par.drone.rotor.Kf; % Speed constraint value
     cstr2 = par.cstr.maxVel^2*par.drone.rotor.Km; % Speed constraint value
-    Tnom = par.drone.m*par.env.g;
 
     T1 = [eye(3); -eye(3)];
 

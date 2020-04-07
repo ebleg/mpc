@@ -50,8 +50,8 @@ function [ref] = generateReference(t, path, par)
     end
     
     % Compute angular velocities and accelerations along the path
-    dang = diff(ref.x.ang(4:6,:), 1, 2);
-    ddang = diff(ref.x.ang(4:6,:), 2, 2);
+    dang = diff(ref.x.ang(4:6,:), 1, 2)/par.sim.h;
+    ddang = diff(ref.x.ang(4:6,:), 2, 2)/par.sim.h/par.sim.h;
     % Make array lengths consistent
     dang = [dang dang(:,end)];
     ddang = [ddang ddang(:,end) ddang(:,end)];

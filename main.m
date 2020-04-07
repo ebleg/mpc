@@ -17,6 +17,7 @@ addpath('fun/vis');
 addpath('fun/stability');
 
 run parameters
+run initLTI
 run header
 
 %% Define path to follow
@@ -24,7 +25,6 @@ run header
 
 fprintf('Objective trajectory: Ellipsoidal spiral\n') 
 path = @(t) [2*cos(t); 12*sin(t); t/3];
-
 
 % fprintf('\nObjective trajectory: RRT* generated path\n\n') 
 % load('shapes.mat');
@@ -61,9 +61,11 @@ ref = generateReference(sol.t, path, par);
 % frame = par.posCtrl.sampleInt/par.angCtrl.sampleInt;
 sol.x.pos(:,1) = ref.x.pos(:,1);%+ [0 0 0 0.2 0 0.2]';
 sol.x.ang(:,1) = ref.x.ang(:,1);
-sol.x.pos(:,1) = ref.x.pos(:,1);%+ [0 0 0 0.2 0 0.2]';
-sol.x.ang(:,1) = ref.x.ang(:,1);
-xref = ref.x.ang;
+% yref(:,1) = LTI.C*ref.x.ang(:,1);
+uref = ref.u.ang;
+
+x_1 = LTI.x0;
+xehat_1=[ref.x.ang(:,1); LTI.d];
 
 % predictionBuffer = ceil(par.posCtrl.dim.N*par.posCtrl.predInt/par.sim.h);
 wdw = waitbar(0.02, sprintf('Simulation progress (%d)', 0.02*100));
@@ -74,15 +76,16 @@ predictionBuffer = max(predictionBufferPos, predictionBufferAng);
 %% Simulation loop
 fprintf('Starting simulation loop...\n'); tic;
 
-
 % i=2:(nsteps-predictionBuffer)
 for i=2:50
+%     disp(num2str(i))
     sol.u.pos(:,i) = positionMPC(sol.x.ang(:,i-1), ...
                                  sol.x.pos(:,i-1), ...
                                  sol.t(i), ...
                                  ref, par);
-    xref(:,i:i+par.angCtrl.dim.N) = [sol.u.pos(2:3,i); mean(ref.x.ang(3:6,i:i+par.angCtrl.dim.N))];
-    sol.u.ang(:,i) = attitudeMPC(xref(:,i:end), par, sol.t(i), sol.x.ang(:,i-1));
+    yref(:,i) = LTI.C * ref.x.ang(:,i);
+    [u, x_0, xehat_0, e] = attitudeMPC(LTI, LTI_e, par, uref(:,1), yref(:,i), pred, x_1, xehat_1, sol.t(i));
+    x_1 = x_0; xehat_1 = xehat_0; sol.u.ang(:,i) = u; 
     g = @(x) rotationalDynamics(x, [sol.u.pos(1,i); sol.u.ang(:,i)] , par);
     sol.x.ang(:,i) = GL4(g, sol.x.ang(:,i-1), par);
     f = @(x) translationalDynamics(x, [sol.u.pos(:,i); sol.x.ang(6,i)] , par);

@@ -7,4 +7,10 @@ if ~(x'*P*x<=1)
     warning ('Point is not in terminal set')
 end
 
+% State input constraints:
+dim = par.angCtrl.dim;
+
+% admisseble set: T * attitude + S *u_N
+   
+
 end

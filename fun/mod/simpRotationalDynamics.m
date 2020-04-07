@@ -11,8 +11,8 @@ function [LTI_rot] = simpRotationalDynamics(par, xref)
     g2 = @(sp) rotationalDynamics(xref, sp, par);
     B = jacobianest(g2, [par.drone.m*par.env.g 0 0 0]');    
     B = B(:,2:end);
-    C = eye(6); % Assume full state knowledge for now
-    D = zeros(6, 3);
+    C = [zeros(3,3), eye(3)]; % Assume full state knowledge for now
+    D = zeros(3, 3);
     
     LTI_rot = ss(A, B, C, D);
 end

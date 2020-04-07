@@ -22,12 +22,12 @@ run header
 
 %% Define path to follow
 % Parameterized for x,y,z with respect to t
-
+% 
 fprintf('Objective trajectory: Ellipsoidal spiral\n') 
-path = @(t) [4*cos(t); 4*sin(t); t/3];
+path = @(t) [2*cos(t); 12*sin(t); t/3];
 
 % fprintf('\nObjective trajectory: Nondifferentiable 2D trajectory\n\n') 
-% path = @(t) [t; 0*t; sign(t-2)+1]; 
+% path = @(t) [t; 0*t; sin(2*t)]; 
 
 % fprintf('\nObjective trajectory: Nondifferentiable 2D trajectory\n\n') 
 % path = @(t) [4*t; 0*t; sign(t-6)+1]; 
@@ -62,7 +62,7 @@ wdw = waitbar(0.02, sprintf('Simulation progress %d%%', 0.02*100));
 
 predictionBufferPos = ceil(par.posCtrl.dim.N*par.posCtrl.predInt/par.sim.h);
 predictionBufferAng = ceil(par.angCtrl.dim.N*par.angCtrl.predInt/par.sim.h);
-predictionBuffer = max(predictionBufferPos + predictionBufferAng);
+predictionBuffer = max(predictionBufferPos, predictionBufferAng);
 %% Simulation loop
 fprintf('Starting simulation loop...\n'); tic;
 
@@ -76,21 +76,27 @@ for i=2:(nsteps-predictionBuffer)
     [u, x_0, xehat_0, e] = attitudeMPC(LTI, LTI_e, par, yref(:,i), pred, x_1, xehat_1, sol.t(i));
     x_1 = x_0; xehat_1 = xehat_0; sol.u.ang(:,i) = u; 
     g = @(x) rotationalDynamics(x, [sol.u.pos(1,i); sol.u.ang(:,i)] , par);
-    sol.x.ang(:,i) = GL4(g, sol.x.ang(:,i-1), par);
+    sol.x.ang(:,i) = RK4(g, sol.x.ang(:,i-1), par.sim.h);
     f = @(x) translationalDynamics(x, [sol.u.pos(:,i); sol.x.ang(6,i)] , par);
-    sol.x.pos(:,i) = GL4(f, sol.x.pos(:,i-1), par);
+    sol.x.pos(:,i) = RK4(f, sol.x.pos(:,i-1), par.sim.h);
     waitbar(i/(nsteps-predictionBuffer), wdw, sprintf('Simulation progress %d%%', round(i/(nsteps-predictionBuffer)*100)));
-
 end
 fprintf('Done - '); toc;
 delete(wdw);
 
 %% Visualisation
-% close all;
+close all;
 figure; ax = gca; axis equal; grid; grid minor; hold on;
 title('Quadcopter simulation'); xlabel('x [m]'); ylabel('y [m]'); zlabel('z [m]');
-refPlot = plotTrajectory(ax, ref.t, ref.x.pos, '.', 'Reference trajectory');
+refPlot = plotTrajectory(ax, ref.x.pos, '.', 'Reference trajectory');
 % refPlot = plotTrajectory(ax, ref.t.pos, refs.x.pos, '.', 'Reference trajectory');
-solPlot = plotTrajectory(ax, sol.t, sol.x.pos, '.', 'Simulated trajectory');
+solPlot = plotTrajectory(ax, sol.x.pos, '.', 'Simulated trajectory');
 legend();
 simulateDrone(ax, sol, par);
+
+%%
+figure; ax = gca;
+subplot(211)
+plot(sol.t, sol.u.pos(3,:)); grid; grid minor; hold on;
+plot(sol.t, sol.x.ang(5,:));
+

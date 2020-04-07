@@ -14,7 +14,7 @@
 par = struct();
 
 %% Simulation parameters
-par.sim.tmax = 1;
+par.sim.tmax = 3;
 par.sim.h = 0.01; % ODE integration timestep
 
 %% Quadcopter properties
@@ -61,7 +61,7 @@ par.angCtrl.predInt = par.sim.h;      % Position MPC prediction interval
 par.angCtrl.LTI = c2d(simpRotationalDynamics(par, [0 0 0 0 0 0]'), par.angCtrl.sampleInt, 'zoh'); % Linear system around hover
 
 % Cost matrices
-par.angCtrl.Q = diag([1 1 1 1 1 1]);
+par.angCtrl.Q = diag([1 1 1 50 50 50]);
 par.angCtrl.R = diag([0.01 0.01 0.01]);
 par.angCtrl.P =  dare(par.angCtrl.LTI.A, par.angCtrl.LTI.B, par.angCtrl.Q, par.angCtrl.R);
 

@@ -23,14 +23,14 @@ run header
 %% Define path to follow
 % Parameterized for x,y,z with respect to t
 % 
-fprintf('Objective trajectory: Ellipsoidal spiral\n') 
-path = @(t) [2*cos(t); 12*sin(t); t/3];
+% fprintf('Objective trajectory: Ellipsoidal spiral\n') 
+% path = @(t) [2*cos(t); 12*sin(t); t/3];
+sig = @(t) 1/(1+exp(-10*t));
+fprintf('\nObjective trajectory: Nondifferentiable 2D trajectory\n\n') 
+path = @(t) [3*t; 0*t; 5*sig(t-3)]; 
 
 % fprintf('\nObjective trajectory: Nondifferentiable 2D trajectory\n\n') 
-% path = @(t) [t; 0*t; sin(2*t)]; 
-
-% fprintf('\nObjective trajectory: Nondifferentiable 2D trajectory\n\n') 
-% path = @(t) [4*t; 0*t; sign(t-6)+1]; 
+% path = @(t) [4*t; 0*t; sign(t-2)+1]; 
 
 % fprintf('Objective trajectory: Fly to a point,  2D\n') 
 % path = @(t) [0*t; 0*t; 0*t+1]; % Fly straight up
@@ -66,6 +66,8 @@ predictionBuffer = max(predictionBufferPos, predictionBufferAng);
 %% Simulation loop
 fprintf('Starting simulation loop...\n'); tic;
 
+[~,K,~] = idare(par.angCtrl.LTI.A,par.angCtrl.LTI.B, par.angCtrl.Q, par.angCtrl.R);
+
 % i=2:(nsteps-predictionBuffer)
 for i=2:(nsteps-predictionBuffer)
     sol.u.pos(:,i) = positionMPC(sol.x.ang(:,i-1), ...
@@ -73,8 +75,9 @@ for i=2:(nsteps-predictionBuffer)
                                  sol.t(i), ...
                                  ref, par);
     yref(:,i) = [sol.u.pos(2:3,i); ref.x.ang(6,i)];
-    [u, x_0, xehat_0, e] = attitudeMPC(LTI, LTI_e, par, yref(:,i), pred, x_1, xehat_1, sol.t(i));
-    x_1 = x_0; xehat_1 = xehat_0; sol.u.ang(:,i) = u; 
+%     [u, x_0, xehat_0, e] = attitudeMPC(LTI, LTI_e, par, yref(:,i), pred, x_1, xehat_1, sol.t(i));
+%     x_1 = x_0; xehat_1 = xehat_0; sol.u.ang(:,i) = u; 
+    sol.u.ang(:,i) = -K*(sol.x.ang(:,i-1) - [0 0 0 yref(:,i)']');
     g = @(x) rotationalDynamics(x, [sol.u.pos(1,i); sol.u.ang(:,i)] , par);
     sol.x.ang(:,i) = RK4(g, sol.x.ang(:,i-1), par.sim.h);
     f = @(x) translationalDynamics(x, [sol.u.pos(:,i); sol.x.ang(6,i)] , par);

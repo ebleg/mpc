@@ -13,7 +13,7 @@ LTI.Cd = [0.5; 0.5 ; 0];
 % LTI.Cd = ones(3,1)
      
 LTI.x0 = [0 0 0.02 -0.5 -0.005 1.6]';
-LTI.d = 0.1;
+LTI.d = 0.001;
 
 % Extended system computation
 LTI_e = struct();

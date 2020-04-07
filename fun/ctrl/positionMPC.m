@@ -13,8 +13,8 @@ function [u_pos] = positionMPC(ang, pos, t, ref, par)
     %% Optimize input
     if k*par.posCtrl.sampleInt <= t
         % Adaptive MPC
-%         setpt = [par.drone.m*par.env.g; ang(4); ang(5); ang(6)];
-        setpt = [par.drone.m*par.env.g; 0; 0; ang(6)];
+        setpt = [par.drone.m*par.env.g; wrapToPi(ang(4)); wrapToPi(ang(5)); wrapToPi(ang(6))];
+%         setpt = [par.drone.m*par.env.g; 0; 0; ang(6)];
 
         LTI_pos = c2d(simpTranslationalDynamics(setpt, par), ...
             par.posCtrl.predInt, ...

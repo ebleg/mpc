@@ -38,14 +38,13 @@ predictionBuffer = ceil(par.angCtrl.dim.N*par.angCtrl.predInt/par.sim.h);
 % i=2:(nsteps-predictionBuffer)
 for i=2:50
     disp(num2str(i));
-    [u, x_0, xehat_0, e] = attitudeMPC(LTI, LTI_e, par, yref(:,i-1), pred, x_1, xehat_1, sol.t(i));
+    [u, x_0, xehat_0] = attitudeMPC(LTI, LTI_e, par, yref(:,i-1), pred, x_1, xehat_1, sol.t(i));
     sol.u.ang(:,i) = u;
-    error(:,i) = e;
     x_1 = x_0;
     xehat_1 = xehat_0;
     % Regular MPC
-    % sol.u.ang(:,i) = attitudeMPC(ref.x.ang(:,i), par, sol.t(i), sol.x.ang(:,i-1));
-    g = @(x) rotationalDynamics(x, [sol.u.pos(1,i); sol.u.ang(:,i)] , par);
+%     sol.u.ang(:,i) = attitudeMPC(ref.x.ang(:,i), par, sol.t(i), sol.x.ang(:,i-1));
+    g = @(x) rotationalDynamics(x, [sol.u.pos(1,i); ref.u.ang(:,i)] , par);
     sol.x.ang(:,i) = RK4(g, sol.x.ang(:,i-1), par.sim.h);
 %     sol.x.ang(:,i) = ref.x.ang(:,i);
     yref(:,i) = LTI.C * sol.x.ang(:,i-1);

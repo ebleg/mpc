@@ -54,7 +54,7 @@ cvx_begin quiet
     % input contraints
     par.angCtrl.F*(u_N - repmat(u_r,dim.N,1)) <= par.angCtrl.f;
 cvx_end    
-u_opt = u_r;% + u_N(1:dim.u);
+u_opt = u_r;
 
 % Real system
 x_1 = LTI.A*x + LTI.B*u_opt + LTI.Bd*dist;
@@ -67,45 +67,4 @@ xehat_1=LTI_e.A*xehat+LTI_e.B*u_opt+pred.G*(y-yhat);
 e = x - xhat;
 u = u_opt;
 
-%% Oud
-% A_output = [eye(dim.x)-LTI.A -LTI.B ;LTI.C, zeros(dim.x, dim.u)];
-% b_output = [LTI.Bd*dhat; yref-LTI.Cd*dhat];
-% 
-% H_OTS = blkdiag(zeros(dim.x),eye(dim.u));
-% h_OTS = zeros(dim.x+dim.u,1);
-% 
-% cvx_begin quiet
-%     variable x_r_u_r(dim.x+dim.u)
-%     minimize (1/2*quad_form(x_r_u_r,H_OTS) + h_OTS'*x_r_u_r)
-%     subject to
-%     A_output * x_r_u_r <= b_output;
-% cvx_end
-% 
-% x_r = x_r_u_r(1:dim.x);
-% u_r = x_r_u_r(dim.x+1:end);
-% 
-% err = xhat - x_r;
-% % h_e = (err'*pred.T'*pred.Qbar*pred.S + 2*err'*(LTI.A^dim.N)'*pred.Pbar*pred.W)';
-% h_e = err'*pred.T'*pred.Qbar*pred.S - pred.S'*pred.Qbar*kron(ones(dim.N+1,1),eye(dim.x))*x_r - pred.Rbar*kron(ones(dim.N,1),eye(dim.u))*u_r;
-% 
-% cvx_begin quiet
-%     variable u_N(dim.u*dim.N)
-%     minimize ( (1/2)*quad_form(u_N,pred.H_e) + ((h_e*[err; x_r; u_r])'*u_N ))
-%     subject to
-%     % input contraints
-%     par.angCtrl.F*u_N <= par.angCtrl.f;
-% cvx_end    
-% u_opt(1:dim.u) = u_N(1:dim.u);
-% 
-% % Real system
-% x_1 = LTI.A*x + LTI.B*u_opt' + LTI.Bd*dist; % + B_ref*r(:,k);
-% y = LTI.C*x + LTI.Cd*dist;
-% x_ang = x;
-% 
-% % Observer
-% yhat=LTI_e.C*xehat;
-% xehat_1=LTI_e.A*xehat+LTI_e.B*u_opt'+pred.G*(y-yhat);
-% 
-% e = x - xhat;
-% u = u_opt';
 

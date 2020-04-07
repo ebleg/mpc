@@ -98,7 +98,7 @@ par.angCtrl.LTI = c2d(simpRotationalDynamics(par, [0 0 0 0 0 0]'), par.angCtrl.s
 
 % Cost matrices
 par.angCtrl.Q = eye(par.angCtrl.dim.x)*diag([1 1 1 20 20 20]);%*diag([1 1 1 20 20 20]);
-par.angCtrl.R = eye(par.angCtrl.dim.u)*diag([1 1 1]);
+par.angCtrl.R = eye(par.angCtrl.dim.u)*diag([1 1 0]);
 par.angCtrl.P =  dare(par.angCtrl.LTI.A, par.angCtrl.LTI.B, par.angCtrl.Q, par.angCtrl.R);
 
 % Constraints
